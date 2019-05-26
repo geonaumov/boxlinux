@@ -1,0 +1,4 @@
+export PATH=/usr/bin:/usr/sbin:/bin:/sbin
+export CHARSET=UTF-8
+export PS1="\h \w >> "
+umask 027

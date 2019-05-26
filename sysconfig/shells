@@ -1,0 +1,3 @@
+# BoxLinux shell configuration
+/bin/ash
+/bin/sh
