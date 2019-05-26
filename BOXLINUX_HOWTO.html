@@ -1,0 +1,203 @@
+<html>
+<head>
+<title>BoxLinux Documentation</title>
+</head>
+<body style="margin:30;padding:30">
+
+<h1>BoxLinux Documentation</h1>
+BoxLinux is a Linux distribution based on Busybox, musl libc and the GNU toolchain.
+
+<div id="toc_container">
+<p class="toc_title">Contents</p>
+<ul class="toc_list">
+  <li><a href="#1Notes">1 Notes</a>
+  <ul>
+    <li><a href="#11File">1.1 Problems with file version</a></li>
+  </ul>
+</li>
+<li><a href="#Building">2 Building</a></li>
+  <ul>
+    <li><a href="#21">2.1 Required tools and libraries</a></li>
+    <li><a href="#22">2.2 Before you begin</a></li>
+    <li><a href="#23">2.3 Explaining package lists and tags</a></li>
+    <li><a href="#24">2.4 Building cross-tools</a></li>
+    <li><a href="#25">2.5 Building tools</a></li>
+    <li><a href="#26">2.6 Building packages</a></li>
+    <li><a href="#27">2.7 Building a kernel</a></li>
+    <li><a href="#28">2.8 Creating a bootable iso</a></li>
+    <li><a href="#29">2.9 Porting new packages - creating boxbuilds</a></li>
+  </ul>
+
+<li><a href="#Installing">3 Installing</a></li>
+
+<li><a href="#Configuration">4 System configuration</a></li>
+  <ul>
+    <li><a href="#41">4.1 Setting the hostname</a></li>
+    <li><a href="#42">4.2 Network setup</a></li>
+    <li><a href="#43">4.3 Managing services</a></li>
+    <li><a href="#44">4.4 Managing users and groups</a></li>
+    <li><a href="#45">4.5 Managing packages</a></li>
+    <li><a href="#46">4.6 Setting the timezone</a></li>
+    <li><a href="#47">4.7 Locale settings</a></li>
+    <li><a href="#48">4.8 System logging</a></li>
+    <li><a href="#48">4.9 Runlevels</a></li>
+    <li><a href="#410">4.10 System statistics</a></li>
+
+  </ul>
+<li><a href="#5">5 Services</a></li>
+    <ul>
+    <li><a href="#51">5.1 Secure file transfer and remote login</a></li>
+    <li><a href="#52">5.2 Mail server</a></li>
+    <li><a href="#53">5.3 Mail delivery server</a></li>
+    <li><a href="#54">5.4 Database server</a></li>
+    <li><a href="#55">5.5 Web server</a></li>
+    </ul>
+
+</ul>
+</div>
+
+<h2 id="1Notes">1 Notes</h2>
+	<li>Under development, always download tags, the master branch is work in progress and might not compile in all situations.
+	<li>There should be no problem compiling the xtools on any distro with the provided development environment.
+	<li>Tested with Debian 9.
+	<li>It's always recommended to use virtualization and/or a testing environment. Don't run boxmaker on pc that is important for you and has a lot of data. If that is the case, always backup first.
+
+<h3 id="11File">1.1 File version</h3>
+A common problem is the different version of file installed on the host system. BoxLinux comes with version 5.32. You have 3 options:
+<ol><li> install file 5.32 on the host system from source
+	<li> try to find a precompiled file-5.32 for your distribution 
+	<li>donwgrade file in boxlinux to the version of your host system by editing config/urls.list, boxbuilds/file.boxbuild, you don't have to edit scripts/tools.sh and scripts/xtools.sh
+
+</ol><h2 id="Building">2 Building</h2>
+
+<h3 id="21">2.1 Required tools and libraries</h3>
+You will need a full development toolchain. Install the following, plus all their dev/devel packages, the package names vary between distros.
+	<li>GCC
+	<li>Binutils
+	<li>Glibc + development part
+	<li>file and it's libmagic
+	<li>ncurses library and headers
+	<li>bison
+	<li>flex
+	<li>m4
+	<li>gawk
+	<li>gettext
+        <li>texinfo
+	<li>grub
+	<li>xorriso
+
+<h3 id="22">2.2 Before you begin</h3>
+All scripts must be executed as root, except the downloader. sudo can also get the job done. Run all commands inside the ./boxlinux directory. The directory name is not important, it can be renamed. Crosstool-ng and buildroot toolchains are not supported. You have to build the boxmaker tools and xtools.
+
+<h3 id="23">2.3 Explaining package lists and tags</h3>
+For now package management is a bit of a mess. Packages are build using lists. Dependencies are linear, meaning that packages will depend on prior packages that they can use (link against). 
+
+<p>The lists I currently have are: system, essentials and xorg. 
+<br>The tags I use are: system, devel, essential, xorg. 
+
+<p>The packages in the first list are what is required to build BoxLinux, install it and provide basic functionality, a running system and a good development environment (GNU toolchain, Python3, Ruby, meson/ninja and cmake). This list will produce system and devel tagged packages. I'm trying to keep the list as simple as possible because it's the core of BoxLinux. Packages in here will be well, or at least better maintained than the rest.
+
+<p>The essential gives the system more functionality, like media and image support, glib2 and various packages that are important but not required for system and devel. Packages in this list are required for almost everything above system, like X.org, GTK+ in the near future etc. It's used as a buffer between system and xorg lists. Packages in this list are tagged as "essential".
+
+<p>The next list, xorg depends on essentials. I includes all X.org packages plus a window manager and a terminal emulator. All packages in this list are tagged "xorg".
+
+<h3 id="24">2.4 Building cross-tools</h3>
+Run: <code>./boxmaker.sh xtools</code>
+
+<h3 id="25">2.5 Building tools</h3>
+You need to build cross-tools first.
+<p>
+Run: <code>./boxmaker.sh tools output/xtools-SOMENUMBERS.tar.gz</code>
+<p>
+where SOMENUMBER is the build id (timestamp) of the cross-tools you compiled.
+
+<h3 id="26">2.6 Building packages</h3>
+You need to build tools first. 
+<p>
+Run: <code>./boxmaker.sh packs output/tools-SOMENUMBERS.tar.gz</code>
+<p>
+The list of the packages build is config/pkg.list. You can add or remove packages by editing it. Every package listed in pkg.list must have a boxbuild in the boxbuilds directory with the same name. Also every package need an entry in config/urls.list with a link to the required file(s).
+
+<h3 id="27">2.7 Building a kernel</h3>
+You need to build xtools first. Tools are not required for building only the kernel. The default kernel configuration file is config/kernel.config
+<p>
+Run: <code>./boxmaker.sh kernel output/xtools-SOMENUMBERS.tar.gz</code>
+<p>
+The kernel will be stored in the output directory as bzImage-SOMENUMBERS
+<h3 id="28">2.8 Creating a bootable iso</h3>
+You need to build a kernel first.
+<p>
+Run: <code>./boxmaker.sh live output/bzImage-SOMENUMBERS</code>
+<p>
+
+<h3 id="29">2.9 Porting new packages - how to write boxbuilds</h3>
+Under construction
+
+<h2 id="Installing">3 Installing</h2>
+Boot the livecd and type <code>./installer.sh</code>
+<p>
+Follow the instructions, the installer is interactive
+By default only system packages will be installed, this is the base system.
+
+<p>To install the rest of the packages from the list you selected in boxmaker, finish the installation, reboot, mount the cd and install them manually with dpkg. The deb packages are in packages/ directory on the livecd.
+
+<h2 id="Configuration">4 System configuration</h2>
+
+<h3 id="41">4.1 Setting the hostname</h3>
+Edit the file <code>/etc/hostname</code> and reboot. 
+<br>Alternatively run <code>hostname -F /etc/hostname</code> to avoid rebooting.
+
+<h3 id="42">4.2 Network setup</h3>
+By default, BoxLinux will automatically bring up the loopback interface and eth0, the first ethernet card. 
+<br>Wifi and bluetooth are not supported for now.
+After bringing up eth0, dhcp configuration will be initiated.
+<br>
+To change the defautlt configuration, edit <code>/etc/network/interfaces</code>. 
+
+<p>Loopback interface configuration:
+<br><code>auto lo</code>
+<br><code>iface lo inet loopback</code>
+
+<p>Ethernet interface configuration using DHCP:
+<br><code>auto eth0</code>
+<br><code>iface eth0 inet dhcp</code>
+<br> The dhcp client used is udhcpc from busybox. 
+
+<p>Ethernet interface configuration using static ip address:
+<br><code>iface eth0 inet static</code>
+<br><code>        address 192.168.1.150</code>
+<br><code>        netmask 255.255.255.0</code>
+<br><code>        gateway 192.168.1.1</code>
+
+<h3 id="43">4.3 Managing services</h3>
+Under construction
+
+<h3 id="44">4.4 Managing users and groups</h3>
+Under construction
+
+<h3 id="45">4.5 Managing packages</h3>
+Under construction
+
+<h3 id="46">4.6 Setting the timezone</h3>
+Under construction
+
+<h3 id="47">4.7 Locale settings</h3>
+Under construction
+
+<h3 id="48">4.8 System logging</h3>
+Under construction
+
+<h3 id="49">4.9 Runlevels</h3>
+Under construction
+
+<h3 id="410">4.10 System statistics</h3>
+Under construction
+
+<h2 id="5">5 Services</h2>
+Under construction
+
+<h3 id="51">5.1 OpenSSH</h3>
+Under construction
+
+</body>
+</html>
