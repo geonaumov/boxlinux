@@ -1,0 +1,25 @@
+PKGNAME=pkgconfig
+VERSION=0.29.2
+TAG=devel
+SOURCE=pkg-config-0.29.2.tar.gz
+URL=https://pkg-config.freedesktop.org/releases/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --with-pc-path=/usr/lib/pkgconfig:/usr/share/pkgconfig --with-internal-glib
+make  
+make install  DESTDIR=$INSTALLDIR  
+rm -rf $INSTALLDIR/usr/bin/pkg-config
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/bin/x86_64-box-linux-musl-pkg-config /usr/bin/pkg-config
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+unlink /usr/bin/pkg-config
+EOF

@@ -1,0 +1,15 @@
+PKGNAME=zlib
+VERSION=1.2.11
+TAG=system
+SOURCE=zlib-1.2.11.tar.gz
+URL=https://zlib.net/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure --prefix=/usr --enable-shared --libdir=/usr/lib 
+make    
+make install  DESTDIR=$INSTALLDIR  
+

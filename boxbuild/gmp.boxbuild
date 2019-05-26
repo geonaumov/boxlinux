@@ -1,0 +1,14 @@
+PKGNAME=gmp
+VERSION=6.1.2
+TAG=devel
+SOURCE=gmp-6.1.2.tar.xz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/gmp/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure  $OPTIONS  
+make  
+make install   DESTDIR=$INSTALLDIR  

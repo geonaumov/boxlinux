@@ -1,0 +1,15 @@
+PKGNAME="meson"
+VERSION="0.48.0"
+TAG="devel"
+SOURCE=meson-0.48.0.tar.gz
+URL=https://github.com/mesonbuild/meson/releases/download/0.48.0/
+DEPS="musl (>= 1.1.18), gccfull (>= 7.2.0), python3 (>= 3.7.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+python3 setup.py build 
+python3 setup.py install --root=dest 
+mkdir -pv $INSTALLDIR/
+cp -rv dest/* $INSTALLDIR/   

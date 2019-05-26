@@ -1,0 +1,63 @@
+PKGNAME=e2fs
+VERSION=1.44.4
+TAG=system
+SOURCE=e2fsprogs-1.44.4.tar.gz
+URL=https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.44.4/
+DEPS="musl (>= 1.1.18), linuxlibs (>= 2.32)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+patch -Np1 -i $SRC/gnuc-prereq.patch
+CFLAGS=-I/usr/include  \
+CPPFLAGS=-I/usr/include  \
+CXXFLAGS=-I/usr/include  \
+./configure  $OPTIONS   	\
+	--disable-defrag 	\
+	--disable-nls		\
+	--disable-backtrace 	\
+	--enable-symlink-build	\
+	--sysconfdir=/etc    \
+                --enable-elf-shlibs     
+
+
+make  
+make -j1 MKDIR_P="install -d"  DESTDIR="$INSTALLDIR" install install-libs
+
+rm -rvf $INSTALLDIR/usr/include/et/com_err.h
+rm -rvf $INSTALLDIR/usr/sbin/mkfs.ext3
+rm -rvf $INSTALLDIR/usr/sbin/mkfs.ext2
+rm -rvf $INSTALLDIR/usr/sbin/dumpe2fs
+rm -rvf $INSTALLDIR/usr/sbin/tune2fs
+rm -rvf $INSTALLDIR/usr/sbin/mke2fs
+rm -rvf $INSTALLDIR/usr/sbin/fsck.ext3
+rm -rvf $INSTALLDIR/usr/sbin/fsck.ext2
+rm -rvf $INSTALLDIR/usr/sbin/e2fsck
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+mkdir -pv /usr/include/et/
+ln -svf /usr/include/com_err.h /usr/include/et/com_err.h
+ln -svf /usr/sbin/mkfs.ext4 /usr/sbin/mkfs.ext3 
+ln -svf /usr/sbin/mkfs.ext4 /usr/sbin/mkfs.ext2
+ln -svf /usr/sbin/mkfs.ext4 /usr/sbin/mke2fs
+ln -svf /usr/sbin/e2mmpstatus /usr/sbin/dumpe2fs
+ln -svf /usr/sbin/e2label /usr/sbin/tune2fs
+ln -svf /usr/sbin/fsck.ext4 /usr/sbin/fsck.ext3
+ln -svf /usr/sbin/fsck.ext4 /usr/sbin/fsck.ext2
+ln -svf /usr/sbin/fsck.ext4 /usr/sbin/e2fsck
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /usr/include/et/com_err.h
+rm -rfv /usr/sbin/mkfs.ext3
+rm -rfv /usr/sbin/mkfs.ext3
+rm -rfv /usr/sbin/dumpe2fs
+rm -rfv /usr/sbin/tune2fs
+rm -rfv /usr/sbin/mke2fs
+rm -rfv /usr/sbin/fsck.ext3
+rm -rfv /usr/sbin/fsck.ext2
+rm -rfv /usr/sbin/e2fsck
+EOF

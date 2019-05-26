@@ -1,0 +1,14 @@
+PKGNAME=make
+VERSION=4.2.1
+TAG=devel
+SOURCE=make-4.2.1.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/make/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS  
+make  
+make install DESTDIR=$INSTALLDIR  

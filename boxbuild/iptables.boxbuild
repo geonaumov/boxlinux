@@ -1,0 +1,20 @@
+PKGNAME=iptables
+VERSION=1.6.2
+TAG=system
+SOURCE=iptables-1.6.2.tar.bz2
+URL=http://ftp.netfilter.org/pub/iptables/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --prefix=/usr \
+		--mandir=/usr/share/man \
+		--sbindir=/sbin \
+		--without-kernel \
+		--enable-devel \
+		--enable-libipq \
+		--enable-shared --disable-nftables
+make  
+make install DESTDIR=$INSTALLDIR   

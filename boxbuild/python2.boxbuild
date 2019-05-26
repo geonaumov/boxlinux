@@ -1,0 +1,25 @@
+PKGNAME=python2
+VERSION=2.7.15
+TAG=devel
+SOURCE=Python-2.7.15.tar.xz
+URL=https://www.python.org/ftp/python/2.7.15/
+DEPS="expat (>= 2.2.5), libbzip2 (>= 1.0.6), libffi (>= 3.2.1), readline (>= 7.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --with-ensurepip=yes --enable-shared --with-system-ffi --with-system-expat
+
+make
+make install DESTDIR=$INSTALLDIR
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+echo "Nothing to do."
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+echo "Nothing to do."
+EOF

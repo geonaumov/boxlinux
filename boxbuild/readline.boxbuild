@@ -1,0 +1,13 @@
+PKGNAME=readline
+VERSION=7.0
+TAG=system
+SOURCE=readline-7.0.tar.gz
+URL=http://ftp.gnu.org/gnu/readline/
+DEPS="musl (>= 1.1.18), ncurses (>= 6.1)"
+CONFLICTS=none
+
+tar xf $SRC/readline-*
+cd readline-*
+./configure $OPTIONS  --enable-multibyte --with-curses --enable-shared 
+make  
+make install DESTDIR=$INSTALLDIR   

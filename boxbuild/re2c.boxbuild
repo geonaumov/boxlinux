@@ -1,0 +1,15 @@
+PKGNAME=re2c
+VERSION=1.1.1
+TAG=devel
+SOURCE=re2c-1.1.1.tar.gz
+URL=https://github.com/skvadrik/re2c/releases/download/1.1.1/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./autogen.sh
+./configure $OPTIONS  
+make  
+make install DESTDIR=$INSTALLDIR   

@@ -1,0 +1,56 @@
+PKGNAME=ncurses
+VERSION=6.1
+TAG=system
+SOURCE=ncurses-6.1.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/ncurses/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --without-ada --without-tests --disable-termcap --disable-rpath-hack --enable-stripping --with-pkg-config-libdir=/usr/lib/pkgconfig --without-cxx-binding --with-terminfo-dirs="/etc/terminfo:/usr/share/terminfo:/lib/terminfo:/usr/lib/terminfo" --enable-pc-files --with-shared --enable-widec --enable-shared 
+
+make  
+make install DESTDIR=$INSTALLDIR   
+
+mkdir -pv $INSTALLDIR/etc/terminfo/a
+mkdir -pv $INSTALLDIR/etc/terminfo/d
+mkdir -pv $INSTALLDIR/etc/terminfo/l
+mkdir -pv $INSTALLDIR/etc/terminfo/r
+mkdir -pv $INSTALLDIR/etc/terminfo/s
+mkdir -pv $INSTALLDIR/etc/terminfo/r
+mkdir -pv $INSTALLDIR/etc/terminfo/v
+mkdir -pv $INSTALLDIR/etc/terminfo/x
+
+cp -rvf $INSTALLDIR/usr/share/terminfo/a/ansi $INSTALLDIR/etc/terminfo/a
+cp -rvf $INSTALLDIR/usr/share/terminfo/d/dumb $INSTALLDIR/etc/terminfo/d
+cp -rvf $INSTALLDIR/usr/share/terminfo/l/linux $INSTALLDIR/etc/terminfo/l
+cp -rvf $INSTALLDIR/usr/share/terminfo/r/rxvt $INSTALLDIR/etc/terminfo/r
+cp -rvf $INSTALLDIR/usr/share/terminfo/s/sun $INSTALLDIR/etc/terminfo/s
+cp -rvf $INSTALLDIR/usr/share/terminfo/v/vt52 $INSTALLDIR/etc/terminfo/v
+cp -rvf $INSTALLDIR/usr/share/terminfo/v/vt100 $INSTALLDIR/etc/terminfo/v
+cp -rvf $INSTALLDIR/usr/share/terminfo/v/vt102 $INSTALLDIR/etc/terminfo/v
+cp -rvf $INSTALLDIR/usr/share/terminfo/v/vt200 $INSTALLDIR/etc/terminfo/v
+cp -rvf $INSTALLDIR/usr/share/terminfo/v/vt220 $INSTALLDIR/etc/terminfo/v
+cp -rvf $INSTALLDIR/usr/share/terminfo/x/xterm $INSTALLDIR/etc/terminfo/x
+cp -rvf $INSTALLDIR/usr/share/terminfo/x/xterm-color $INSTALLDIR/etc/terminfo/x
+cp -rvf $INSTALLDIR/usr/share/terminfo/x/xterm-xfree86 $INSTALLDIR/etc/terminfo/x
+
+rm -rf $INSTALLDIR/usr/share/terminfo
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -sv /usr/lib/libncursesw.so.6.1 /usr/lib/libncurses.so.6.1
+ln -sv /usr/lib/libncursesw.so.6 /usr/lib/libncurses.so.6
+ln -sv /usr/lib/libncursesw.a /usr/lib/libncurses.a
+ln -sv /usr/lib/libncurses++w.a /usr/lib/libncurses++.a
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /usr/lib/libncurses.so.6.1
+rm -rfv /usr/lib/libncurses.so.6
+rm -rfv /usr/lib/libncurses.a
+rm -rfv /usr/lib/libncurses++.a
+EOF

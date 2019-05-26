@@ -1,0 +1,14 @@
+PKGNAME=curl
+VERSION=7.64.0
+TAG=system
+SOURCE=curl-7.64.0.tar.bz2
+URL=https://curl.haxx.se/download/
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+ ./configure $OPTIONS  --disable-static --enable-threaded-resolver --enable-shared --with-ca-fallback --without-gnutls --with-ssl
+make  
+make install DESTDIR=$INSTALLDIR   
+

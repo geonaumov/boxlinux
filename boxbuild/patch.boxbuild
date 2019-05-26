@@ -1,0 +1,13 @@
+PKGNAME=patch
+VERSION=2.7
+TAG=devel
+SOURCE=patch-2.7.6.tar.xz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/patch/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure  $OPTIONS
+make  
+make install DESTDIR=$INSTALLDIR   

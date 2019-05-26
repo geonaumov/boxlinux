@@ -1,0 +1,14 @@
+PKGNAME=flex
+VERSION=2.6.4
+TAG=devel
+SOURCE=flex-2.6.4.tar.gz
+URL=https://github.com/westes/flex/releases/download/v2.6.4/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure  $OPTIONS  
+make  
+make install DESTDIR=$INSTALLDIR  

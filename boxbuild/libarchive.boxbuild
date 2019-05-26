@@ -1,0 +1,13 @@
+PKGNAME=libarchive
+VERSION=3.3.2
+TAG=devel
+SOURCE=libarchive-3.3.2.tar.gz
+URL=libarchive.org/downloads
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS --disable-static --without-openssl
+make  
+make install DESTDIR=$INSTALLDIR   

@@ -1,0 +1,14 @@
+PKGNAME=bison
+VERSION=3.0
+TAG=devel
+SOURCE=bison-3.0.4.tar.xz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/bison/
+DEPS="musl (>= 1.1.18), flex (>= 2.6.4)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS  
+make  
+make install DESTDIR=$INSTALLDIR   

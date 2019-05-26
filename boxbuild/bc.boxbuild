@@ -1,0 +1,31 @@
+PKGNAME=bc
+VERSION=1.06
+TAG=devel
+SOURCE=bc-1.06.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/bc/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+#echo Substituting ed with sed and bash with ash
+cat > bc/fix-libmath_h << EOF
+#! /tools/bin/ash
+sed -e '1   s/^/{/' \
+    -e     's/$/,/' \
+    -e '2,$ s/^//'  \
+    -e   '$ d'       \
+    -i libmath.h
+
+sed -e '$ s/$/0}/' \
+    -i libmath.h
+EOF
+
+# sed -i -e '/flex/s/as_fn_error/: ;; # &/' configure
+
+## CONSIDER --with-readline
+
+./configure $OPTIONS --mandir=/usr/share/man --infodir=/usr/share/info --with-readline 
+make  
+make install  DESTDIR=$INSTALLDIR   

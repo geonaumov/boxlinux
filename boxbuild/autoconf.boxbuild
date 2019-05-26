@@ -1,0 +1,13 @@
+PKGNAME=autoconf
+VERSION=2.69
+TAG=devel
+SOURCE=autoconf-2.69.tar.xz
+URL=http://ftp.gnu.org/gnu/autoconf/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure --prefix=/usr --libdir=/usr/lib
+make  
+make install DESTDIR=$INSTALLDIR   

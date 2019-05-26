@@ -1,0 +1,16 @@
+PKGNAME=linuxlibs
+VERSION=2.32
+TAG=system
+SOURCE=util-linux-2.32.tar.xz
+URL=https://www.kernel.org/pub/linux/utils/util-linux/v2.32/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --enable-shared --disable-all-programs --disable-nls --enable-libuuid --enable-libblkid --enable-libmount --enable-libsmartcols --enable-libfdisk 
+
+make  
+make install DESTDIR=$INSTALLDIR
+

@@ -1,0 +1,14 @@
+PKGNAME=alsautils
+VERSION=1.1.5
+TAG=system
+SOURCE=alsa-utils-1.1.5.tar.bz2
+URL=ftp://ftp.alsa-project.org/pub/utils/
+DEPS="musl (>= 1.1.18), alsalib (>= 1.1.5), ncurses (>= 6.1)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure --prefix=/usr --libdir=/usr/lib --disable-alsaconf --disable-bat --disable-xmlto --with-curses=ncursesw --with-udev-rules-dir=/lib/udev/
+make
+make install DESTDIR=$INSTALLDIR 
+

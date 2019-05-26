@@ -1,0 +1,42 @@
+PKGNAME=musl
+VERSION=1.1.18
+TAG=system
+SOURCE=musl-1.1.18.tar.gz
+URL=https://www.musl-libc.org/releases/
+DEPS=none
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --enable-shared         --host=x86_64-box-linux-musl  \
+        --build=x86_64-box-linux-musl \
+        --target=x86_64-box-linux-musl --libdir=/usr/lib 
+
+echo Configuring
+mkdir -p $INSTALLDIR/etc	
+echo Setting up the dynamic loader
+cat > $INSTALLDIR/etc/ld.so.conf << EOF
+/usr/lib
+/usr/local/lib
+EOF
+
+echo Building
+make   
+echo Installing
+make install  DESTDIR=$INSTALLDIR  
+cd $INSTALLDIR/lib
+unlink ld-musl-x86_64.so.1
+cd ..
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/lib/libc.so /lib/ld-musl-x86_64.so.1
+ln -svf /lib/ld-musl-x86_64.so.1 /usr/bin/ldd
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /lib/ld-musl-x86_64.so.1
+rm -rfv /usr/bin/ldd
+EOF

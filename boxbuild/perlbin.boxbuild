@@ -1,0 +1,31 @@
+PKGNAME=perlbin
+VERSION=5.26.1
+TAG=devel
+SOURCE=perl-5.26.1.tar.xz
+URL=https://www.cpan.org/src/5.0/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure.gnu --prefix=/usr -Dlibdir=/usr/lib -Dcc=gcc -Dvendorprefix=/usr -Dman1dir=/usr/share/man/man1 -Dman3dir=/usr/share/man/man3 -Dpager=/usr/bin/less -Duseshrplib  -Dusethreads 
+
+make 
+make install DESTDIR=$INSTALLDIR/
+
+rm -rf $INSTALLDIR/*.0 
+rm -rf $INSTALLDIR/usr/bin/perlthanks
+rm -rf $INSTALLDIR/usr/bin/perl5.26.1
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/bin/perlbug /usr/bin/perlthanks
+ln -svf /usr/bin/perl /usr/bin/perl5.26.1
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+unlink /usr/bin/perlthanks
+unlink /usr/bin/perl5.26.1
+EOF

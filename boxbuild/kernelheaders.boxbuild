@@ -1,0 +1,17 @@
+PKGNAME=kernelheaders
+VERSION=4.13.11
+TAG=devel
+SOURCE=linux-4.13.11.tar.gz
+URL=https://www.kernel.org/pub/linux/kernel/v4.x/
+DEPS=none
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+mkdir -pv /usr/lib/
+ln -s /tools/lib/libbfd* /usr/lib/
+ln -s /tools/lib/libopcodes* /usr/lib/
+make mrproper
+make ARCH=$ARCH INSTALL_HDR_PATH=$INSTALLDIR/usr headers_install 
+make clean

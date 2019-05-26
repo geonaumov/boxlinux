@@ -1,0 +1,28 @@
+PKGNAME=automake
+VERSION=1.16.1
+TAG=devel
+SOURCE=automake-1.16.1.tar.xz
+URL=http://ftp.gnu.org/gnu/automake/
+DEPS="musl (>= 1.1.18), autoconf (>= 2.69)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS 
+make  
+make install DESTDIR=$INSTALLDIR   
+
+rm -rvf $INSTALLDIR/usr/bin/aclocal
+rm -rvf $INSTALLDIR/usr/bin/automake
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/bin/aclocal-1.16 /usr/bin/aclocal
+ln -svf /usr/bin/automake-1.16 /usr/bin/automake
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /usr/bin/aclocal
+rm -rfv /usr/bin/automake
+EOF

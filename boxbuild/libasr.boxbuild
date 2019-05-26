@@ -1,0 +1,14 @@
+PKGNAME=libasr
+VERSION=20160213
+TAG=system
+SOURCE=libasr-latest.tar.gz
+URL=https://www.opensmtpd.org/archives/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure --prefix=/usr --libdir=/usr/lib  --with-gnu-ld --with-pie
+make  
+make install DESTDIR=$INSTALLDIR  
+

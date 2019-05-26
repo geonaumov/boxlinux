@@ -1,0 +1,92 @@
+PKGNAME=binutils
+VERSION=2.29
+TAG=devel
+SOURCE=binutils-2.29.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/binutils/
+DEPS="musl (>= 1.1.18), gmp (>= 6.1.2), mpfr (>= 3.1.6), mpc (>= 1.0.3), isl (>= 0.19), zlib (>= 1.2.11), kernelheaders (>= 4.13.11)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+mkdir -p binutils-build
+cd binutils-build
+
+export 
+CC="gcc -isystem /usr/include" \
+LDFLAGS="-Wl,-rpath-link,/usr/lib:/lib" \
+../configure $OPTIONS    \
+        --libdir=/usr/lib     \
+        --disable-nls           \
+        --disable-multilib      \
+        --disable-werror        \
+        --enable-shared         \
+        --enable-plugins        \
+        --enable-64-bit-bfd     \
+        --disable-gold          \
+        --enable-threads        \
+	--host=x86_64-box-linux-musl  \
+        --build=x86_64-box-linux-musl \
+        --target=x86_64-box-linux-musl 
+ 
+make  
+make install DESTDIR=$INSTALLDIR  
+
+rm -rf $INSTALLDIR/usr/x86_64-box-linux-musl/bin/ld.bfd
+rm -rf $INSTALLDIR/usr/bin/ld
+rm -rf $INSTALLDIR/usr/bin/strip 
+rm -rf $INSTALLDIR/usr/bin/nm 
+rm -rf $INSTALLDIR/usr/bin/as 
+rm -rf $INSTALLDIR/usr/bin/ar 
+rm -rf $INSTALLDIR/usr/bin/objcopy 
+rm -rf $INSTALLDIR/usr/bin/objdump 
+rm -rf $INSTALLDIR/usr/bin/ranlib 
+rm -rf $INSTALLDIR/usr/bin/readelf 
+rm -rf $INSTALLDIR/usr/bin/size 
+rm -rf $INSTALLDIR/usr/bin/strings 
+rm -rf $INSTALLDIR/usr/bin/addr2line 
+rm -rf $INSTALLDIR/usr/bin/c++filt
+rm -rf $INSTALLDIR/usr/bin/elfedit
+rm -rf $INSTALLDIR/usr/bin/gprof
+rm -rf $INSTALLDIR/usr/bin/ld.bfd
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/x86_64-box-linux-musl/bin/ld /usr/x86_64-box-linux-musl/bin/ld.bfd
+ln -svf /usr/x86_64-box-linux-musl/bin/ld /usr/bin/ld.bfd
+ln -svf /usr/x86_64-box-linux-musl/bin/ld /usr/bin/ld
+ln -svf /usr/x86_64-box-linux-musl/bin/strip /usr/bin/strip 
+ln -svf /usr/x86_64-box-linux-musl/bin/nm /usr/bin/nm 
+ln -svf /usr/x86_64-box-linux-musl/bin/as /usr/bin/as
+ln -svf /usr/x86_64-box-linux-musl/bin/ar /usr/bin/ar 
+ln -svf /usr/x86_64-box-linux-musl/bin/objcopy /usr/bin/objcopy
+ln -svf /usr/x86_64-box-linux-musl/bin/objdump /usr/bin/objdump
+ln -svf /usr/x86_64-box-linux-musl/bin/ranlib /usr/bin/ranlib
+ln -svf /usr/x86_64-box-linux-musl/bin/readelf /usr/bin/readelf
+ln -svf /usr/x86_64-box-linux-musl/bin/size /usr/bin/size
+ln -svf /usr/x86_64-box-linux-musl/bin/strings /usr/bin/strings
+ln -svf /usr/x86_64-box-linux-musl/bin/addr2line /usr/bin/addr2line
+ln -svf /usr/x86_64-box-linux-musl/bin/c++filt /usr/bin/c++filt
+ln -svf /usr/x86_64-box-linux-musl/bin/elfedit /usr/bin/elfedit
+ln -svf /usr/x86_64-box-linux-musl/bin/gprof /usr/bin/gprof
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /usr/x86_64-box-linux-musl/bin/ld.bfd
+rm -rfv /usr/bin/ld 
+rm -rfv /usr/bin/strip 
+rm -rfv /usr/bin/nm 
+rm -rfv /usr/bin/as 
+rm -rfv /usr/bin/ar 
+rm -rfv /usr/bin/objcopy 
+rm -rfv /usr/bin/objdump 
+rm -rfv /usr/bin/ranlib 
+rm -rfv /usr/bin/readelf 
+rm -rfv /usr/bin/size 
+rm -rfv /usr/bin/strings 
+rm -rfv /usr/bin/addr2line 
+rm -rfv /usr/bin/c++filt
+rm -rfv /usr/bin/elfedit
+rm -rfv /usr/bin/gprof
+rm -rfv /usr/bin/ld.bfd
+EOF

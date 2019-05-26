@@ -1,0 +1,15 @@
+PKGNAME=rsync
+VERSION=3.1.3
+TAG=system
+SOURCE=rsync-3.1.3.tar.gz
+URL=https://www.samba.org/ftp/rsync/src/
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0)"
+CONFLICTS=none
+
+tar xf $SRC/rsync-*
+cd rsync-*
+
+CFLAGS="-I/usr/include" CXXFLAGS="-I/usr/include" CPPFLAGS="-I/usr/include" LDFLAGS="-L/usr/lib" ./configure $OPTIONS --enable-iconv 
+make  
+make install DESTDIR=$INSTALLDIR   
+

@@ -1,0 +1,14 @@
+PKGNAME=xorriso
+VERSION=1.4.8
+TAG=system
+SOURCE=xorriso-1.4.8.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/xorriso/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+CFLAGS=-I/usr/include ./configure  $OPTIONS    
+make  
+make -j1 install DESTDIR=$INSTALLDIR   

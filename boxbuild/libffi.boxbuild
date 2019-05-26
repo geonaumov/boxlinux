@@ -1,0 +1,23 @@
+PKGNAME=libffi
+VERSION=3.2.1
+TAG=system
+SOURCE=libffi-3.2.1.tar.gz
+URL=ftp://sourceware.org/pub/libffi/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+sed -e '/^includesdir/ s/$(libdir).*$/$(includedir)/' \
+    -i include/Makefile.in
+
+sed -e '/^includedir/ s/=.*$/=@includedir@/' \
+    -e 's/^Cflags: -I${includedir}/Cflags:/' \
+    -i libffi.pc.in
+
+./configure $OPTIONS  --disable-static --with-gcc-arch=native
+
+  
+make
+make install DESTDIR=$INSTALLDIR 

@@ -1,0 +1,14 @@
+PKGNAME=expat
+VERSION=2.2.5
+TAG=system
+SOURCE=expat-2.2.5.tar.bz2
+URL=http://prdownloads.sourceforge.net/expat/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS  
+make  
+make install DESTDIR=$INSTALLDIR   

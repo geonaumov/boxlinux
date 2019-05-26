@@ -1,0 +1,13 @@
+PKGNAME=libtool
+VERSION=2.4.6
+TAG=devel
+SOURCE=libtool-2.4.6.tar.xz
+URL=http://ftp.gnu.org/gnu/libtool/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS
+make  
+make install DESTDIR=$INSTALLDIR   

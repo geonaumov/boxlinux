@@ -1,0 +1,19 @@
+PKGNAME=grub
+VERSION=2.02
+TAG=devel
+SOURCE=grub-2.02.tar.xz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/grub/
+DEPS="musl (>= 1.1.18), linuxlibs (>= 2.32)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+CFLAGS=-I/usr/include  \
+CPPFLAGS=-I/usr/include  \
+CXXFLAGS=-I/usr/include  \
+./configure $OPTIONS --includedir=/usr/include --sysconfdir=/etc --disable-efiemu --disable-werror &> config.log
+make &> build.log
+make install  DESTDIR=$INSTALLDIR &> install.log
+rm -rfv $INSTALLDIR/etc/bash*
+

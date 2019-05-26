@@ -1,0 +1,18 @@
+PKGNAME=btx
+VERSION=1.2.1
+TAG=tools
+SOURCE=bitchx-1.2.1.tar.gz
+URL=http://www.bitchx.com/download/
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0), ncurses (>= 6.1)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS  --with-ssl
+make  
+make install DESTDIR=$INSTALLDIR  
+
+mkdir -pv $INSTALLDIR/usr/share/pixmaps
+cp -rvf doc/BitchX.xpm $INSTALLDIR/usr/share/pixmaps/bitchx.xpm
+ 
+

@@ -1,0 +1,22 @@
+PKGNAME=links
+VERSION=2.17
+TAG=tools
+SOURCE=links-2.17.tar.gz
+URL=http://links.twibright.com/download/
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0), zlib (>= 1.2.11), libbzip2 (>= 1.0.6)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS 		\
+	--with-zlib 		\
+	--with-ssl=/usr 	\
+	--enable-locale-charset \
+	--with-libevent		\
+	--with-bzip2		
+
+make  
+
+make install  DESTDIR=$INSTALLDIR   
+

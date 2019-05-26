@@ -1,0 +1,15 @@
+PKGNAME=mpfr
+VERSION=3.1.6
+TAG=devel
+SOURCE=mpfr-3.1.6.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/mpfr/
+DEPS="musl (>= 1.1.18), gmp (>= 6.1.2)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure  $OPTIONS  
+make  
+make install   DESTDIR=$INSTALLDIR  
+

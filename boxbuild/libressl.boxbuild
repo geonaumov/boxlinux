@@ -1,0 +1,14 @@
+PKGNAME=libressl
+VERSION=2.9.0
+TAG=system
+SOURCE=libressl-2.9.0.tar.gz
+URL=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS  --enable-shared --with-gnu-ld  
+
+make  
+make install  DESTDIR=$INSTALLDIR  

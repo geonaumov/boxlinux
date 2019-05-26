@@ -1,0 +1,15 @@
+PKGNAME=raid
+VERSION=4.0
+TAG=system
+SOURCE=mdadm-4.0.tar.xz
+URL=https://www.kernel.org/pub/linux/utils/raid/mdadm/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+ln -sv /usr/bin/gcc /usr/bin/cc
+sed 's@-Werror@@' -i Makefile
+make  
+make install DESTDIR=$INSTALLDIR  
+unlink /usr/bin/cc

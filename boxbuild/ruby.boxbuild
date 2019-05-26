@@ -1,0 +1,13 @@
+PKGNAME=ruby
+VERSION=2.6.1
+TAG=devel
+SOURCE=ruby-2.6.1.tar.gz
+URL=https://cache.ruby-lang.org/pub/ruby/2.6
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./configure $OPTIONS --enable-shared --without-openssl --with-out-ext=readline --without-git --with-ssl --disable-install-rdoc --disable-install-capi --disable-install-doc
+make  
+make install DESTDIR=$INSTALLDIR  

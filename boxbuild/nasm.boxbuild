@@ -1,0 +1,18 @@
+PKGNAME=nasm
+VERSION=2.13.03
+TAG=devel
+SOURCE=nasm-2.13.03.tar.xz
+URL=http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS  
+make  
+
+mkdir -pv $INSTALLDIR/usr/bin
+cp nasm $INSTALLDIR/usr/bin/
+cp ndisasm $INSTALLDIR/usr/bin/
+

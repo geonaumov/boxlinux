@@ -1,0 +1,14 @@
+PKGNAME=libevent
+VERSION=2.1.8
+TAG=system
+SOURCE=libevent-2.1.8-stable.tar.gz
+URL=https://github.com/libevent/libevent/releases/download/release-2.1.8-stable/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --disable-samples --disable-malloc-replacement --disable-openssl
+make  
+make install DESTDIR=$INSTALLDIR   

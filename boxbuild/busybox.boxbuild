@@ -1,0 +1,44 @@
+PKGNAME=busybox
+VERSION=1.29.2
+TAG=system
+SOURCE=busybox-1.29.2.tar.bz2
+URL=https://busybox.net/downloads/
+DEPS=none
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+cp -rvf /busybox-boxlinux.config .config
+ln -sv /usr/bin/ar /usr/bin/$TARGET-ar
+ln -sv /usr/bin/strip /usr/bin/$TARGET-strip
+
+make
+make install
+unlink /usr/bin/$TARGET-ar
+
+## CUSTOM INSTALL
+
+mkdir -pv $INSTALLDIR/   
+cp -rfv _install/* $INSTALLDIR/
+
+## UDHCPC SCRIPT
+mkdir -pv $INSTALLDIR/usr/share/udhcpc
+cp -rvf examples/udhcp/simple.script $INSTALLDIR/usr/share/udhcpc/default.script
+chmod +x $INSTALLDIR/usr/share/udhcpc/default.script
+
+cd $INSTALLDIR  
+mkdir -pv etc/
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+mkdir -pv /srv/www
+mkdir -pv /srv/ftp
+chmod -v u+s /bin/su
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+echo "Nothing to do."
+EOF
+
+

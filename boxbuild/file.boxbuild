@@ -1,0 +1,14 @@
+PKGNAME=file
+VERSION=5.30
+TAG=devel
+SOURCE=file-5.30.tar.gz
+URL=ftp://ftp.astron.com/pub/file/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS --libdir=/usr/lib
+make  
+make install  DESTDIR=$INSTALLDIR  

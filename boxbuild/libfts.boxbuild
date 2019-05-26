@@ -1,0 +1,14 @@
+PKGNAME=libfts
+VERSION=1.2.7
+TAG=system
+SOURCE=v1.2.7.tar.gz
+URL=https://github.com/pullmoll/musl-fts/archive/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./bootstrap.sh
+./configure $OPTIONS
+make  
+make install DESTDIR=$INSTALLDIR  

@@ -1,0 +1,31 @@
+PKGNAME=openssh
+VERSION=7.9p1
+TAG=system
+SOURCE=openssh-7.9p1.tar.gz
+URL=http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/
+DEPS="musl (>= 1.1.18), libressl (>= 2.9.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+#LIBS=-lpthread 
+./configure $OPTIONS  --with-md5-passwords --disable-wtmp --disable-wtmpx --without-pam --sysconfdir=/etc/sshd
+make  
+make install DESTDIR=$INSTALLDIR  
+
+
+## PACKAGE SCRIPTS
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+echo "Creating SSH keys, if required"
+ssh-keygen -A
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+echo "Nothing to do."
+EOF
+
+

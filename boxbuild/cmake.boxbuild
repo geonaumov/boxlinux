@@ -1,0 +1,16 @@
+PKGNAME=cmake
+VERSION=3.10.2
+TAG=devel
+SOURCE=cmake-3.10.2.tar.gz
+URL=https://cmake.org/files/v3.10/
+DEPS="musl (>= 1.1.18), libarchive (>= 3.3.2), libuv (>= 1.23.0), curl (>= 7.64.0), ncurses (>= 6.1)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+CC=/usr/bin/x86_64-box-linux-musl-gcc	\
+CXX=/usr/bin/x86_64-box-linux-musl-c++	\
+./bootstrap --prefix=/usr --no-system-libs --mandir=/share/man --system-curl
+make
+make install DESTDIR=$INSTALLDIR   

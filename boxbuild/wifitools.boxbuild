@@ -1,0 +1,15 @@
+PKGNAME=wifitools
+VERSION=30pre9
+TAG=system
+SOURCE=wireless_tools.30.pre9.tar.gz
+URL=https://hewlettpackard.github.io/wireless-tools/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+make 
+mkdir -pv $INSTALLDIR/usr
+mkdir -pv $INSTALLDIR/usr/share/man
+make PREFIX=$INSTALLDIR/usr INSTALL_MAN=$INSTALLDIR/usr/share/man install

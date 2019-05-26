@@ -1,0 +1,20 @@
+PKGNAME=libbzip2
+VERSION=1.0.6
+TAG=system
+SOURCE=bzip2-1.0.6.tar.gz
+URL=http://anduin.linuxfromscratch.org/LFS/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+make -f Makefile-libbz2_so
+make  
+mkdir -pv $INSTALLDIR/usr/lib
+mkdir -pv $INSTALLDIR/usr/include
+
+cp -v libbz2.a  $INSTALLDIR/usr/lib/
+cp -v bzlib.h $INSTALLDIR/usr/include
+cp -v bzlib_private.h $INSTALLDIR/usr/include
+cp -v libbz2.so.1.0.6 $INSTALLDIR/usr/lib/
+

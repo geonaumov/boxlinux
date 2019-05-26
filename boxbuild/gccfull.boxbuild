@@ -1,0 +1,95 @@
+PKGNAME=gccfull
+VERSION=7.2.0
+TAG=devel
+SOURCE=gcc-7.2.0.tar.gz
+URL=ftp://sotirov-bg.net/pub/mirrors/gnu/gcc/gcc-7.2.0/
+DEPS="musl (>= 1.1.18), gmp (>= 6.1.2), mpfr (>= 3.1.6), mpc (>= 1.0.3), isl (>= 0.19), zlib (>= 1.2.11), binutils (>= 2.29), kernelheaders (>= 4.13.11)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+case $(uname -m) in
+  x86_64)
+    sed -e '/m64=/s/lib64/lib/' \
+        -i.orig gcc/config/i386/t-linux64
+  ;;
+esac
+
+mkdir -p gcc-build
+cd gcc-build
+
+CC="gcc -isystem /usr/include" \
+CXX="g++ -isystem /usr/include" \
+LDFLAGS="-Wl,-rpath-link,/usr/lib:/lib" \
+../configure $OPTIONS      	\
+    --libdir=/usr/lib		\
+    --disable-multilib      	\
+    --enable-languages=c,c++    \
+    --enable-c99                \
+    --enable-long-long          \
+    --disable-bootstrap         \
+    --with-isl=/usr             \
+    --with-gmp=/usr             \
+    --with-mpfr=/usr            \
+    --with-mpc=/usr             \
+    --with-native-system-header-dir=/usr/include    \
+    --disable-libgomp           \
+    --disable-libsanitizer      \
+    --disable-nls               \
+    --disable-libmudflap        \
+    --disable-libssp            \
+    --disable-libquadmath       \
+    --disable-libatomic         \
+    --disable-libmpx            \
+    --disable-libitm            \
+    --disable-libvtv            \
+    --disable-libcilkrts	\
+    --enable-libstdcxx           \
+        --enable-install-libiberty  \
+	--host=x86_64-box-linux-musl  \
+    --build=x86_64-box-linux-musl \
+    --target=x86_64-box-linux-musl
+ 
+make   
+make install-strip DESTDIR=$INSTALLDIR 
+cd $INSTALLDIR/usr
+mv ./lib64/* ./lib/
+rm -rfv ./lib64
+
+# Hardlinks
+rm -rfv $INSTALLDIR/usr/bin/gcc-ranlib
+rm -rfv $INSTALLDIR/usr/bin/gcc-nm
+rm -rfv $INSTALLDIR/usr/bin/gcc-ar
+rm -rfv $INSTALLDIR/usr/bin/gcc
+rm -rfv $INSTALLDIR/usr/bin/cpp
+rm -rfv $INSTALLDIR/usr/bin/c++
+rm -rfv $INSTALLDIR/usr/bin/g++
+rm -rfv $INSTALLDIR/usr/bin/x86_64-box-linux-musl-gcc-7.2.0
+rm -rfv $INSTALLDIR/usr/bin/x86_64-box-linux-musl-g++
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+ln -svf /usr/bin/x86_64-box-linux-musl-gcc /usr/bin/x86_64-box-linux-musl-gcc-7.2.0
+ln -svf /usr/bin/x86_64-box-linux-musl-c++ /usr/bin/x86_64-box-linux-musl-g++
+ln -svf /usr/bin/x86_64-box-linux-musl-gcc-ranlib /usr/bin/gcc-ranlib
+ln -svf /usr/bin/x86_64-box-linux-musl-gcc-ar /usr/bin/gcc-ar
+ln -svf /usr/bin/x86_64-box-linux-musl-gcc-nm /usr/bin/gcc-nm
+ln -svf /usr/bin/x86_64-box-linux-musl-gcc /usr/bin/gcc
+ln -svf /usr/bin/x86_64-box-linux-musl-cpp /usr/bin/cpp
+ln -svf /usr/bin/x86_64-box-linux-musl-c++ /usr/bin/c++
+ln -svf /usr/bin/x86_64-box-linux-musl-g++ /usr/bin/g++
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+rm -rfv /usr/bin/x86_64-box-linux-musl-gcc-7.2.0
+rm -rfv /usr/bin/x86_64-box-linux-musl-g++
+rm -rfv /usr/bin/gcc-ranlib
+rm -rfv /usr/bin/gcc-ar
+rm -rfv /usr/bin/gcc-nm
+rm -rfv /usr/bin/gcc
+rm -rfv /usr/bin/cpp
+rm -rfv /usr/bin/c++
+rm -rfv /usr/bin/g++
+EOF

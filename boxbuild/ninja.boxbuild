@@ -1,0 +1,16 @@
+PKGNAME="ninja"
+VERSION="1.8.2"
+TAG="devel"
+SOURCE=ninja-1.8.2.tar.gz
+URL=https://github.com/ninja-build/ninja/archive/v1.8.2/
+DEPS="musl (>= 1.1.18), gccfull (>= 7.2.0), python3 (>= 3.7.0), meson (>= 0.48.0)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+CC=/usr/bin/x86_64-box-linux-musl-gcc		\
+CXX=/usr/bin/x86_64-box-linux-musl-c++		\
+AR=/usr/bin/x86_64-box-linux-musl-gcc-ar	\
+python3 configure.py --bootstrap --verbose
+mkdir -pv $INSTALLDIR/usr/bin/
+cp -rvf ninja $INSTALLDIR/usr/bin/

@@ -1,0 +1,50 @@
+PKGNAME=opensmtpd
+VERSION=6.4.1p2
+TAG=system
+SOURCE=opensmtpd-6.4.1p2.tar.gz
+URL=http://opensmtpd.org/archives/
+DEPS="musl (>= 1.1.18), libevent (>= 2.1.8), libressl (>= 2.9.0), libfts (>= 1.2.7), libasr (>= 20160213)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+
+./configure $OPTIONS 			\
+	--with-gnu-ld			\
+	--with-libs="-lfts" 		\
+	--with-pie 			\
+	--sysconfdir=/etc/mail  	\
+	--with-user-smtpd=smtpd		\
+	--with-user-queue=smtpq		\
+	--with-group-queue=smtpq 	
+
+make  
+make install DESTDIR=$INSTALLDIR
+
+## MAIL ALIASES
+mkdir -pv $INSTALLDIR/etc/mail
+cat > $INSTALLDIR/etc/mail/aliases << EOF
+MAILER-DAEMON: postmaster
+postmaster: root
+operator: root
+daemon:	root
+uucp: root
+abuse: root
+security: root
+EOF
+
+## PACKAGE SCRIPTS
+
+cat > $DEBTEMP/DEBIAN/postinst << 'EOF'
+#!/bin/ash
+echo "Nothing to do."
+EOF
+
+cat > $DEBTEMP/DEBIAN/prerm << 'EOF'
+#!/bin/ash
+echo "Stopping service, if required"
+sv down smtpd
+sleep 2s
+echo "Disabling service, if required"
+rm -rvf /var/service/smtpd
+EOF

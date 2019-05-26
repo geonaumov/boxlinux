@@ -1,0 +1,14 @@
+PKGNAME=libuv
+VERSION=1.23.0
+TAG=devel
+SOURCE=libuv-v1.23.0.tar.gz
+URL=https://dist.libuv.org/dist/v1.23.0/
+DEPS="musl (>= 1.1.18)"
+CONFLICTS=none
+
+tar xf $SRC/$SOURCE
+cd *
+./autogen.sh
+./configure $OPTIONS --disable-static 
+make  
+make install DESTDIR=$INSTALLDIR   
