@@ -1,0 +1,9 @@
+# /etc/inittab
+# BoxLinux
+::sysinit:/etc/sysinit
+::restart:sv down /var/service/*
+::restart:/sbin/reboot
+::ctrlaltdel:/sbin/reboot
+::shutdown:sv down /var/service/*
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a

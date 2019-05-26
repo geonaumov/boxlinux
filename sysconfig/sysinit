@@ -1,0 +1,23 @@
+#! /bin/ash
+echo "BOXLINUX SYSINIT"
+date
+uname -srm
+echo "Configuring kernel logging"
+dmesg -n2
+echo "Mounting filesystems"
+mkdir -p /dev/pts
+mount -a
+echo "Configuring kernel settings"
+sysctl -qp /etc/sysctl.conf
+echo "Setting hostname"
+hostname -F /etc/hostname
+echo "Starting network"
+ifup -a &>/dev/null
+echo "Starting services ..."
+echo
+for service in $(ls /var/service)
+do
+	echo " * Starting service $service"
+	runsv /var/service/$service &
+	sleep 1s
+done

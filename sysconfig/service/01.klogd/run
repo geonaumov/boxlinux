@@ -1,0 +1,5 @@
+#!/bin/ash
+# BoxLinux klog service
+echo "$(date) Kernel logger"
+exec klogd -n 2>&1
+

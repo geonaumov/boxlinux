@@ -1,0 +1,4 @@
+#!/bin/ash
+# BoxLinux httpd service
+echo "$(date) Web server"
+exec httpd -u www:www -f -h /srv/www 2>&1
