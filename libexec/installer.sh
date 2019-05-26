@@ -108,7 +108,7 @@ mkdir -p $INSTALLDEST/var/lib/dpkg/info
 touch $INSTALLDEST/var/lib/dpkg/status
 mkdir -p $INSTALLDEST/var/boxer/packages
 
-echo "Copying system packages to destination"
+echo "Copying packages to destination"
 cp -rf *.deb $INSTALLDEST/var/boxer/packages
 
 echo Unpacking default configuration
