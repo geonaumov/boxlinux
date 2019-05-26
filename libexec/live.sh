@@ -188,15 +188,6 @@ menuentry "BoxLinux Live - Boot from CD" {
       initrd /ramfs.cpio.gz
       boot
 }
-
-menuentry "BoxLinux Live - Boot from USB" {
-      set root=(hd0)
-      echo Loading kernel
-      linux /kernel root=/dev/ram0 quiet splash nomodeset
-      echo Loading ramfs
-      initrd /ramfs.cpio.gz
-      boot
-}
 EOF
 
 echo "Creating ISO image"
