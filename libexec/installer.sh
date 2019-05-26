@@ -109,7 +109,7 @@ touch $INSTALLDEST/var/lib/dpkg/status
 mkdir -p $INSTALLDEST/var/boxer/packages
 
 echo "Copying system packages to destination"
-cp -rf *system.deb $INSTALLDEST/var/boxer/packages
+cp -rf *.deb $INSTALLDEST/var/boxer/packages
 
 echo Unpacking default configuration
 tar xf /sysconfig.tgz -C $INSTALLDEST/etc/
@@ -124,7 +124,6 @@ msg "Performing package installation"
 cat > $INSTALLDEST/install.sh << EOF
 #!/bin/ash
 cd /var/boxer/packages
-echo "Installing system"
 dpkg -i *.deb 
 EOF
 chmod +x $INSTALLDEST/install.sh
