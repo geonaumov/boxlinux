@@ -119,8 +119,8 @@ rm -rf $ROOTFS/install_pkg.sh
 #cp -rf $1 $ROOTFS/kernel 
 
 echo "Copying installer to installation media"
-cp -rf $DEFDIR/libexec/installer.sh $ROOTFS/
-chmod +x $ROOTFS/installer.sh
+cp -rf $DEFDIR/libexec/boxstrap.sh $ROOTFS/sbin/boxstrap
+chmod +x $ROOTFS/sbin/boxstrap
 
 echo Packing system configuration
 cd $DEFDIR/sysconfig
