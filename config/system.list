@@ -24,7 +24,6 @@ automake
 libtool
 ncurses
 linuxlibs
-e2fs_patch
 e2fs
 raid
 xorriso

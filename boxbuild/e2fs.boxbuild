@@ -1,15 +1,14 @@
 PKGNAME=e2fs
-VERSION=1.44.4
+VERSION=1.45.2
 TAG=system
-SOURCE=e2fsprogs-1.44.4.tar.gz
-URL=https://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v1.44.4/
+SOURCE=e2fsprogs-1.45.2.tar.gz
+URL=https://sourceforge.net/projects/e2fsprogs/files/e2fsprogs/v1.45.2/
 DEPS="musl (>= 1.1.18), linuxlibs (>= 2.32)"
 CONFLICTS=none
 
 tar xf $SRC/$SOURCE
 cd *
 
-patch -Np1 -i $SRC/gnuc-prereq.patch
 CFLAGS=-I/usr/include  \
 CPPFLAGS=-I/usr/include  \
 CXXFLAGS=-I/usr/include  \

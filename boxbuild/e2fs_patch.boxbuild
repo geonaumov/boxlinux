@@ -1,9 +1,0 @@
-PKGNAME=e2fs
-VERSION=1.44.4
-TAG=system
-SOURCE=gnuc-prereq.patch
-URL=https://git.alpinelinux.org/cgit/aports/plain/main/e2fsprogs/
-DEPS="musl (>= 1.1.18)"
-CONFLICTS=none
-
-
