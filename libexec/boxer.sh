@@ -22,6 +22,15 @@ export INSTALLDIR="/tmp/install"
 # User variables
 export MAKEFLAGS=-j$(nproc)
 
+# Directories to strip
+stripdir="/bin
+/sbin
+/usr/bin
+/usr/sbin
+/lib
+/usr/lib
+"
+
 ## For dpkg
 mkdir -p /var/lib/dpkg/info/
 mkdir -p /var/lib/dpkg/updates/
@@ -51,17 +60,15 @@ pkg_create () {
 	mkdir -pv $INSTALLDIR/usr/src/boxlinux/boxbuild
 	cp -rvf /boxbuild/$PKGNAME.boxbuild $INSTALLDIR/usr/src/boxlinux/boxbuild/
 	
-	echo "Stripping $INSTALLDIR"
-	find $INSTALLDIR -type f |
-		while read f; do
-	    	case "$(file --brief $f)" in
-	        ELF*executable*,\ not\ stripped | \
-	        ELF*shared\ object*,\ not\ stripped)
-	            strip --strip-unneeded $f ;;
-	        current\ ar\ archive)
-	            strip --strip-debug $f ;;
-		esac
+	for dir in $stripdir ; 
+	do
+		if [ -d $INSTALLDIR/$dir ]; then
+			echo "Stripping $dir"
+			find $INSTALLDIR/$dir -type f \
+				-exec strip --strip-debug '{}' ';'
+		fi
 	done
+
 	echo "Creating data archive"
 	tar zcf $DEBTEMP/data.tar.gz ./
 	echo "Creating control file"

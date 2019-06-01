@@ -146,15 +146,6 @@ make install  &> $LOGDIR/binutils.log
 cd $WORKING
 rm -rf gcc-*
 
-echo "File"
-tar xf $SRC/file-*
-cd file-*
-./configure  --prefix="/tools" --host="$TARGET" --build="$HOST"  >> $LOGS/tools-file-config-$BUILDID.log
-make  >> $LOGS/tools-file-$BUILDID.log
-make install  DESTDIR=$ROOTFS >> $LOGS/tools-file-$BUILDID.log
-cd $WORKING
-rm -rf file-*
-
 echo "Patch"
 tar xf $SRC/patch-*
 cd patch-*
