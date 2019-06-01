@@ -117,6 +117,8 @@ pkg_create () {
 	ar r $PKGDIR/$TEMPLATE.deb debian-binary control.tar.gz data.tar.gz
 }
 
+echo "BOXER PACKAGE BUILDER" 
+echo
 currentnum=0
 totalnum=$(wc -l /current.list | cut -d " " -f1)
 for pkg in $(cat /current.list) ; do
