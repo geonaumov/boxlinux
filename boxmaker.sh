@@ -37,11 +37,23 @@ root_check () {
 }
 
 file_check () {
+	FILENAME=$(realpath $1)
 	echo "Looking for $(basename $FILENAME)"
 	if [ ! -f $FILENAME ]; then
 		echo "File $FILENAME not found!"
 		exit
 	fi	
+}
+
+disk_check () {
+	FREEDISK=$(df ./ | grep dev | awk '{print $4}')
+	MINDISK=8000000
+	if [ $FREEDISK -lt $MINDISK ]; then
+		echo "Not enough disk space!"
+		exit
+	else
+		echo "Disk space available."
+	fi
 }
 
 deps_check () {
@@ -110,8 +122,6 @@ download () {
 }
 
 build_xtools () {
-	download
-	root_check
 	echo "Building xtools-$ARCH-$BUILDID"
 	source $DEFDIR/libexec/xtools.sh
 	echo "Packing" 
@@ -125,11 +135,6 @@ build_xtools () {
 }
 
 build_tools () {
-	download
-	root_check
-	# Weird path error, check
-	FILENAME=$(realpath $1)
-	file_check
 	echo "Building tools-$ARCH-$BUILDID"
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
@@ -149,10 +154,6 @@ build_tools () {
 
 build_system () {
 	set -e
-	download
-	root_check
-	FILENAME=$(realpath $1)
-	file_check
 	echo "Creating directory tree"
 	mkdir -p $ROOTFS
 	mkdir -p $OUTPUT/packages
@@ -228,8 +229,6 @@ build_system () {
 }
 
 build_kernel () {
-	FILENAME=$(realpath $1)
-	file_check
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $ROOTFS
@@ -252,7 +251,6 @@ build_kernel () {
 }
 
 build_live () {
-	root_check
 	echo "Building live image"
 	FILENAME=$(realpath $1)
 	file_check
@@ -289,31 +287,49 @@ case "$1" in
 		download
 		;;
 	xtools)
+		root_check
+		file_check $2
 		deps_check
+		disk_check
 		clean_up
 		init
+		download
 		build_xtools
 		;;
 	tools)
+		root_check
+		file_check $2
 		deps_check
+		disk_check
 		clean_up
 		init
+		download
 		build_tools $2
 		;;
 	system)
+		root_check
+		file_check $2
+		disk_check
 		clean_up
 		init
+		download
 		build_system $2
 		;;
 	kernel)
+		root_check
+		file_check $2
+		deps_check
+		disk_check
 		clean_up
 		init
+		download
 		build_kernel $2
 		;;
 	live)
-		deps_check
-		init
+		root_check
 		clean_up
+		init
+		download
 		build_live $(realpath $2)
 		;;
 	clean)
