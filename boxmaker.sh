@@ -3,10 +3,23 @@
 
 set -e
 
+echo
 echo "BOXMAKER - THE BOXLINUX DEVELOPMENT SCRIPT"
 source config/boxmaker.config
 
+deps_list="gcc
+cpp
+m4
+make
+flex
+bison
+bc
+xorriso
+grub2-mkrescue
+"
+
 init () {	
+	echo "Build system init"
 	mkdir -p $ROOTFS
 	mkdir -p $WORKING
 	mkdir -p $SRC
@@ -14,27 +27,50 @@ init () {
 	mkdir -p $LOGS
 }
 
+root_check () {
+	if [[ $EUID -ne 0 ]]; then
+		echo
+		echo "This script must be run as root!"
+		help_me
+		exit 1
+	fi
+}
+
+file_check () {
+	echo "Looking for $(basename $FILENAME)"
+	if [ ! -f $FILENAME ]; then
+		echo "File $FILENAME not found!"
+		exit
+	fi	
+}
+
+deps_check () {
+	echo "Checking dependencies"
+	for command in $deps_list
+	do
+		if which $command &> /dev/null ; then
+			continue
+		else
+			echo "$command missing!"
+			exit
+		fi
+	done
+}
+
 unmount () {
+	echo "Unmounting virtual filesystems, if required"
 	set +e
 	umount $ROOTFS/proc &> /dev/null
 	umount $ROOTFS/sys &> /dev/null
 	umount $ROOTFS/dev &> /dev/null
 	umount $ROOTFS/tmp &> /dev/null
 	umount $ROOTFS/run &> /dev/null
+	echo "Unbinding directories, if required"
 	umount $ROOTFS/packages &> /dev/null
 	umount $ROOTFS/src &> /dev/null
 	umount $ROOTFS/logs &> /dev/null
 	umount $ROOTFS/boxbuild &> /dev/null
 	set -e
-}
-
-root_check () {
-	if [[ $EUID -ne 0 ]]; then
-		echo
-		echo "This script must be run as root!"
-   		help_me
-		exit 1
-	fi
 }
 
 clean_up () {
@@ -45,14 +81,9 @@ clean_up () {
 	rm -rf $ROOTFS
 	rm -rf $WORKING
 	set +e
-	unlink /tools
-	unlink /cross-tools
+	unlink /tools &> /dev/null
+	unlink /cross-tools &> /dev/null
 	set -e
-}
-
-debian_deps () {
-	root_check
-	apt install git gcc g++ cpp make m4 bison flex xorriso grub bc
 }
 
 download () {
@@ -83,7 +114,7 @@ build_xtools () {
 	root_check
 	echo "Building xtools-$ARCH-$BUILDID"
 	source $DEFDIR/libexec/xtools.sh
-        echo "Packing" 
+	echo "Packing" 
 	cd $ROOTFS
 	tar cf $OUTPUT/xtools-$ARCH-$BUILDID.tar ./
 	gzip $OUTPUT/xtools-$ARCH-$BUILDID.tar
@@ -98,14 +129,14 @@ build_tools () {
 	root_check
 	# Weird path error, check
 	FILENAME=$(realpath $1)
+	file_check
 	echo "Building tools-$ARCH-$BUILDID"
-	echo "with xtools $FILENAME"
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $ROOTFS
 	tar xf $FILENAME
 	source $DEFDIR/libexec/tools.sh
-        echo "Cleaning up tools"
+	echo "Cleaning up tools"
 	cd $ROOTFS
 	rm -rf cross-tools
 	echo "Packing tools"
@@ -120,18 +151,9 @@ build_system () {
 	set -e
 	download
 	root_check
-	if [[ $EUID -ne 0 ]]; then
-		echo "This script must be run as root"
-   		exit 1
-	fi
 	FILENAME=$(realpath $1)
-	
-	if [ ! -f $FILENAME ]; then
-		echo "File $(basename $FILENAME) not found!!!"
-		exit
-	fi
-
-	echo "Preparing chroot and tools"
+	file_check
+	echo "Creating directory tree"
 	mkdir -p $ROOTFS
 	mkdir -p $OUTPUT/packages
 	mkdir -p $ROOTFS/proc
@@ -150,21 +172,21 @@ build_system () {
 	mkdir -p $ROOTFS/usr/bin
 	mkdir -p $ROOTFS/usr/sbin
 	mkdir -p $ROOTFS/var/log
-	echo "Adding base list"
-	cp -rfv $DEFDIR/config/$BASELIST.list $ROOTFS/current.list
 	cd $ROOTFS
-	mount -v -t proc proc $ROOTFS/proc
-	mount -v -t sysfs sysfs $ROOTFS/sys
-	mount -v -t tmpfs tmpfs $ROOTFS/run
-	mount -v -t tmpfs tmpfs $ROOTFS/tmp
-	mount -v --bind /dev $ROOTFS/dev
+	echo "Mounting virtual filesystems"
+	mount -t proc proc $ROOTFS/proc
+	mount -t sysfs sysfs $ROOTFS/sys
+	mount -t tmpfs tmpfs $ROOTFS/run
+	mount -t tmpfs tmpfs $ROOTFS/tmp
+	mount --bind /dev $ROOTFS/dev
 	rm -rf ./dev/console
 	mknod -m 600 ./dev/console c 5 1
 	rm -rf ./dev/null
 	mknod -m 666 ./dev/null c 1 3
-pwd
-echo "Setting up tools: $(basename $FILENAME)"
+	echo "Unpacking tools: $(basename $FILENAME)"
 	tar xf $FILENAME
+	echo "Setting up rootfs"
+	cp -rf $DEFDIR/config/$BASELIST.list $ROOTFS/current.list
 	cd bin
 	ln -s ../tools/bin/ash sh
 	ln -s ../tools/bin/ash ash
@@ -184,33 +206,35 @@ echo "Setting up tools: $(basename $FILENAME)"
 	ln -s ../tools/lib/libgmpxx.so.4 ./
 	ln -s ../tools/lib/libz.so.1 ./
 	sed -e 's/tools/usr/' ../tools/lib/libstdc++.la > ./libstdc++.la
-	cp -rfv /etc/resolv.conf $ROOTFS/etc/
-	cp -rfv $DEFDIR/config/busybox-*.config $ROOTFS/
-	mkdir -pv $ROOTFS/packages
-	mount -v --bind $OUTPUT/packages $ROOTFS/packages
-	mkdir -pv $ROOTFS/src
-	mount -v --bind $SRC $ROOTFS/src
-	mkdir -pv $ROOTFS/logs
-	mount -v --bind $LOGS $ROOTFS/logs
-	mkdir -pv $ROOTFS/boxbuild
-	mount -v --bind $DEFDIR/boxbuild $ROOTFS/boxbuild
+	cp -rf /etc/resolv.conf $ROOTFS/etc/
+	cp -rf $DEFDIR/config/busybox-*.config $ROOTFS/
 	cp -rf $DEFDIR/libexec/boxer.sh $ROOTFS/
 	chmod +x $ROOTFS/boxer.sh
-	mkdir -pv $ROOTFS/tools/etc/
+	mkdir -p $ROOTFS/tools/etc/
 	touch $ROOTFS/tools/etc/ld.so.conf
-	cp -rvf $DEFDIR/sysconfig/* $ROOTFS/etc/
-	echo "Running worker in chroot"
+	cp -rf $DEFDIR/sysconfig/* $ROOTFS/etc/
+	echo "Binding directories"
+	mkdir -p $ROOTFS/packages
+	mount --bind $OUTPUT/packages $ROOTFS/packages
+	mkdir -p $ROOTFS/src
+	mount --bind $SRC $ROOTFS/src
+	mkdir -p $ROOTFS/logs
+	mount --bind $LOGS $ROOTFS/logs
+	mkdir -p $ROOTFS/boxbuild
+	mount --bind $DEFDIR/boxbuild $ROOTFS/boxbuild
+	echo "Running boxer in chroot"
 	cd $DEFDIR
 	chroot $ROOTFS /tools/bin/ash boxer.sh
 }
 
 build_kernel () {
-	echo "Starting a clean build"
+	FILENAME=$(realpath $1)
+	file_check
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $ROOTFS
 	echo "Unpacking cross-tools"
-	tar xf $OUTPUT/$(basename $1)
+	tar xf $FILENAME
 	ln -sfn $ROOTFS/cross-tools /
 	export PATH=/cross-tools/bin:/cross-tools/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 	cd $WORKING
@@ -227,9 +251,12 @@ build_kernel () {
 	rm -rf linux-*
 }
 
-
 build_live () {
 	root_check
+	echo "Building live image"
+	FILENAME=$(realpath $1)
+	file_check
+	echo "Using kernel $FILENAME"
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $DEFDIR
@@ -242,65 +269,57 @@ help_me () {
 	echo 
 	echo "Usage: "
 	echo
-	echo "   ./boxmaker.sh command /path/to/... "
+	echo "   ./boxmaker.sh command [ /path/to/... ]"
 	echo 
 	echo "Commands:"
 	echo
-	echo "   download     - download sources (run first)"
-	echo "   clean        - remove temporary data and unmount everything"
-	echo "   debian_deps  - install Debian 9 x86_64 host tools"
-	echo
-	echo "   xtools                            - build cross-tools"
-	echo "   tools /path/to/xtools-ID.tar.gz   - build tools"
-	echo "   kernel /path/to/xtools-ID.tar.gz  - build kernel"
-	echo "   packs /path/to/tools-ID.tar.gz    - build binary packages for target"
-	echo "   live /path/to/bzImage-ID.tar.gz   - build iso for a rescue/installer cd"
+	echo "   download                             - download sources"
+	echo "   clean                                - remove and unmount everything"
+	echo "   xtools                               - build xtools"
+	echo "   tools    /path/to/xtools-ID.tar.gz   - build tools with XTOOLS"
+	echo "   kernel   /path/to/xtools-ID.tar.gz   - build kernel with XTOOLS"
+	echo "   system   /path/to/tools-ID.tar.gz    - build binary packages with TOOLS"
+	echo "   live     /path/to/bzImage-ID.tar.gz  - build live iso with KERNEL"
 	echo
 }
 
 case "$1" in
-        debian_deps)
-            	init
-            	debian_deps
-            	;;
-        download)
-            	init
-            	download
-            	;;
-        xtools)
-		unmount
+	download)
+		init
+		download
+		;;
+	xtools)
+		deps_check
 		clean_up
-            	init
-            	build_xtools
-            	;;
-        tools)
-		unmount
+		init
+		build_xtools
+		;;
+	tools)
+		deps_check
 		clean_up
-            	init
-            	build_tools $2
-            	;;
-        system)
-		unmount
+		init
+		build_tools $2
+		;;
+	system)
 		clean_up
-            	init
-            	build_system $2
-            	;;
-    	kernel)
-		unmount
+		init
+		build_system $2
+		;;
+	kernel)
 		clean_up
-            	init
-            	build_kernel $2
-            	;;
+		init
+		build_kernel $2
+		;;
 	live)
-       		init
-		unmount
+		deps_check
+		init
 		clean_up
-                build_live $(realpath $2)
-            	;;
-        clean)
+		build_live $(realpath $2)
+		;;
+	clean)
 		clean_up
 		;;
-        *)
+	*)
 		help_me
 		exit 1
 esac
