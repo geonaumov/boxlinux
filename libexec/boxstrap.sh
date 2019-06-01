@@ -18,7 +18,8 @@ if [ $# -eq 0 ]; then
 	exit 1
 fi
 
-if [[ ! $1="--help" && $1="-help" && $1="-h" && $1="help" ]]; then
+case $1 in 
+  -h|-help|--help|help) 
 	heading
 	echo "Experimental - use at your own risk! Backup important data."
 	echo
@@ -34,7 +35,13 @@ if [[ ! $1="--help" && $1="-help" && $1="-h" && $1="help" ]]; then
 	echo "For now, only booting from the first drive is supported."
 	echo
 	exit
-fi
+  ;;
+
+  *)
+	echo "Continue"
+	continue
+  ;;
+esac 
 
 echo
 heading
@@ -123,7 +130,7 @@ mkdir -p tmp
 mkdir -p var/db/boxer
 mkdir -p var/run
 mkdir -p var/spool/cron/crontabs
-mkdir -p lib64
+mkdir -p lib
 mkdir -p etc
 mkdir -p var/log/service
 chown -R logger:logger var/log
