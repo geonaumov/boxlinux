@@ -144,11 +144,10 @@ build_tools () {
 	cd $ROOTFS
 	rm -rf cross-tools
 	echo "Packing tools"
-	tar cf $OUTPUT/tools-$ARCH-$BUILDID.tar ./
-	gzip $OUTPUT/tools-$ARCH-$BUILDID.tar
+	tar zcf $OUTPUT/tools-$ARCH-$BUILDID.tgz ./
 	clean_up
 	echo Output file:
-	ls -lh $OUTPUT/tools-$ARCH-$BUILDID.tar
+	ls -lh $OUTPUT/tools-$ARCH-$BUILDID.tgz
 }
 
 build_system () {
