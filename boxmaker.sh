@@ -126,12 +126,11 @@ build_xtools () {
 	source $DEFDIR/libexec/xtools.sh
 	echo "Packing" 
 	cd $ROOTFS
-	tar cf $OUTPUT/xtools-$ARCH-$BUILDID.tar ./
-	gzip $OUTPUT/xtools-$ARCH-$BUILDID.tar
+	tar cfz $OUTPUT/xtools-$ARCH-$BUILDID.tgz ./
 	cd $WORKING
 	clean_up
 	echo Output file:
-	ls -lh $OUTPUT/xtools-$ARCH-$BUILDID.tar
+	ls -lh $OUTPUT/xtools-$ARCH-$BUILDID.tgz
 }
 
 build_tools () {
@@ -288,7 +287,6 @@ case "$1" in
 		;;
 	xtools)
 		root_check
-		file_check $2
 		deps_check
 		disk_check
 		clean_up
