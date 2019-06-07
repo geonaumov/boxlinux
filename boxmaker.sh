@@ -129,8 +129,6 @@ build_xtools () {
 	tar cfz $OUTPUT/xtools-$ARCH-$BUILDID.tgz ./
 	cd $WORKING
 	clean_up
-	echo Output file:
-	ls -lh $OUTPUT/xtools-$ARCH-$BUILDID.tgz
 }
 
 build_tools () {
@@ -146,8 +144,6 @@ build_tools () {
 	echo "Packing tools"
 	tar zcf $OUTPUT/tools-$ARCH-$BUILDID.tgz ./
 	clean_up
-	echo Output file:
-	ls -lh $OUTPUT/tools-$ARCH-$BUILDID.tgz
 }
 
 build_system () {
