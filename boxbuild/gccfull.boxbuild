@@ -76,7 +76,7 @@ ln -svf /usr/bin/x86_64-box-linux-musl-gcc-ranlib /usr/bin/gcc-ranlib
 ln -svf /usr/bin/x86_64-box-linux-musl-gcc-ar /usr/bin/gcc-ar
 ln -svf /usr/bin/x86_64-box-linux-musl-gcc-nm /usr/bin/gcc-nm
 ln -svf /usr/bin/x86_64-box-linux-musl-gcc /usr/bin/gcc
-ln -svf /usr/bin/x86_64-box-linux-musl-cpp /usr/bin/cpp
+ln -svf /usr/bin/x86_64-box-linux-musl-c++ /usr/bin/cpp
 ln -svf /usr/bin/x86_64-box-linux-musl-c++ /usr/bin/c++
 ln -svf /usr/bin/x86_64-box-linux-musl-g++ /usr/bin/g++
 EOF
