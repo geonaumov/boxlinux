@@ -9,4 +9,4 @@ ISO image for VBox and Hyper-V.
 
 The documentation is in html format, BOXLINUX_HOWTO.html but is still work in progress.
 
-eMail me at george.naumov@abv.bg
+eMail me at george.naumov@outlook.com
