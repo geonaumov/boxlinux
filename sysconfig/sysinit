@@ -18,6 +18,8 @@ mkdir -p /dev/pts
 run "Mounting filesystems" "mount -a"
 run "Kernel settings" "sysctl -qp /etc/sysctl.conf"
 run "Setting hostname" "hostname -F /etc/hostname"
+run "Preparing /etc/network/if-up.d" "mkdir -p /etc/network/if-up.d"
+run "Preparing /etc/network/if-pre-up.d" "mkdir -p /etc/network/if-pre-up.d"
 run "Starting network" "ifup -a"
 echo "Starting services ..."
 echo
