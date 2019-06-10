@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux cron service
-echo "$(date) Task scheduler"
+echo "Task scheduler"
 exec /usr/sbin/crond -f 2>&1  

@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux network time service
-echo "$(date) NTP"
+echo "NTP"
 exec ntpd -n -d  2>&1  
