@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux smtpd service
-echo "$(date) Mail server"
+echo "Mail server"
 exec smtpd -d 2>&1

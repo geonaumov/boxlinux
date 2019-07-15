@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux syslog service
-echo "$(date) System logger"
+echo "System logger"
 exec syslogd -n 2>&1

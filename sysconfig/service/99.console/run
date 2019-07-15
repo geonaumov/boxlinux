@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux getty tty service
-echo "$(date) Running getty on tty1"
+echo "Running getty on tty1"
 getty 115200 console linux  

@@ -1,4 +1,4 @@
 #!/bin/ash
 # BoxLinux sshd service
-echo "$(date) SSH server"
+echo "SSH server"
 exec /usr/sbin/sshd -D 2>&1
