@@ -246,8 +246,8 @@ build_kernel () {
 
 build_live () {
 	echo "Building live image"
-	FILENAME=$(realpath $1)
-	file_check
+	FILENAME=$1
+	file_check $1
 	echo "Using kernel $FILENAME"
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
