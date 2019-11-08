@@ -1,11 +1,23 @@
 #! /bin/bash
 # gnaumov@premiumworx.net
 
-set -e
+msg () {
+	echo -e "[\e[33m $( date +%H:%M:%S)\e[39m ] $1"
+}
 
-echo
-echo "BOXMAKER - THE BOXLINUX DEVELOPMENT SCRIPT"
+set -e
+echo -e "\e[33mBOXMAKER - THE BOXLINUX DEVELOPMENT SCRIPT\e[39m"
 source ./boxmaker.conf
+
+echo "Build ID number:   $BUILDID"
+echo "Build system:      $(uname -m)"
+echo "Host system:       $ARCH"
+echo "Target toolchain:  $TARGET"
+echo "Number of cores:   $(nproc)"
+echo "Root directory:    $ROOTFS"
+echo "Working directory: $WORKING"
+echo "Sources directory: $SRC"
+echo "Output directory:  $OUTPUT"
 
 deps_list="gcc
 cpp
@@ -18,7 +30,6 @@ xorriso
 "
 
 setup_build () {
-	echo "Build system init"
 	mkdir -p $ROOTFS
 	mkdir -p $WORKING
 	mkdir -p $SRC
@@ -34,32 +45,14 @@ run_checks () {
 		exit 1
 	fi
 
-	FREEDISK=$(df ./ | grep dev | awk '{print $4}')
-	MINDISK=8000000
-	if [ ! $FREEDISK -lt $MINDISK ]; then
-		echo "Not enough disk space!"
-		exit
-	fi
-
 if [ -f /usr/bin/grub-mkrescue ]; then 
-	echo "Found /usr/bin/grub-mkrescue"
 	GRUBCMD="/usr/bin/grub-mkrescue"
 fi
 
 if [ -f /usr/bin/grub2-mkrescue ]; then 
-	echo "Found /usr/bin/grub-mkrescue"
 	GRUBCMD="/usr/bin/grub2-mkrescue"
 fi 
 
-		if which $GRUBCMD &> /dev/null ; then
-			continue
-		else
-			echo "$GRUBCMD missing!"
-			exit
-		fi
-
-
-	echo "Checking dependencies"
 	for command in $deps_list
 	do
 		if which $command &> /dev/null ; then
@@ -74,7 +67,6 @@ fi
 
 file_check () {
 	FILENAME=$(realpath $1)
-	echo "Looking for $(basename $FILENAME)"
 	if [ ! -f $FILENAME ]; then
 		echo "File $FILENAME not found!"
 		exit
@@ -97,7 +89,7 @@ unmount () {
 
 clean_up () {
 	cd $DEFDIR
-	source config/boxmaker.conf
+	source ./boxmaker.conf
 	unmount
 	rm -rf $ROOTFS
 	rm -rf $WORKING
@@ -108,23 +100,23 @@ clean_up () {
 }
 
 build_xtools () {
-	echo "Building xtools-$ARCH-$BUILDID"
+	msg "Building xtools-$ARCH-$BUILDID"
 	source $DEFDIR/libexec/xtools.sh
-	echo "Packing" 
+	msg "Packing" 
 	cd $ROOTFS
 	tar cfz $OUTPUT/xtools-$ARCH-$BUILDID.tgz ./
 	cd $WORKING
+	msg "Done packing $OUTPUT/xtools-$ARCH-$BUILDID.tgz"
 	clean_up
 }
 
-build_rootfs () {
-	echo "Building rootfs-$ARCH-$BUILDID"
+build_system () {
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $ROOTFS
-	echo Unpacking cross-tools
+	msg "Unpacking $FILENAME"
 	tar xf $FILENAME
-	source $DEFDIR/libexec/rootfs.sh
+	source $DEFDIR/libexec/system.sh
 	clean_up
 }
 
@@ -137,15 +129,22 @@ build_kernel () {
 	ln -sfn $ROOTFS/cross-tools /
 	export PATH=/cross-tools/bin:/cross-tools/sbin:/bin:/sbin:/usr/bin:/usr/sbin
 	cd $WORKING
-	echo "Unpacking the Linux kernel"
+	echo "Unpacking and preparing source"
 	tar xf $SRC/linux-*
 	cd linux-*
-	make mrproper 
-	cp -rf $DEFDIR/kernel-$ARCH.conf .config
-	echo "Building"
-	make ARCH=$ARCH CROSS_COMPILE=$TARGET- 
-	echo "Done."
-	cp -rf arch/x86/boot/bzImage $OUTPUT/bzImage-$ARCH-$BUILDID
+		if ARCH="aarch64"; then  
+			OLDARCH=$ARCH
+			echo "The correct architecture variable for aarch64 is arm64"
+			export ARCH="arm64"
+		fi
+		make mrproper
+		echo "Configuring kernel"
+		CROSS_COMPILE=$TARGET- make defconfig &> $DEFDIR/logs/kernel-config-$ARCH-$BUILDID.log
+		echo "Building kernel"
+		CROSS_COMPILE=$TARGET- make &> $DEFDIR/logs/kernel-build-$ARCH-$BUILDID.log
+		echo "Done."
+		cp -rf arch/$ARCH/boot/bzImage $OUTPUT/kernel-$ARCH-$BUILDID
+		export ARCH=$OLDARCH
 	cd $WORKING
 	rm -rf linux-*
 }
@@ -192,12 +191,12 @@ case "$1" in
 		setup_build
 		build_xtools
 		;;
-	rootfs)
+	system)
 		run_checks
 		file_check $2
 		clean_up
 		setup_build
-		build_rootfs $2
+		build_system $2
 		;;
 	kernel)
 		run_checks

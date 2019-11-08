@@ -1,4 +1,4 @@
-	echo "Preparing"
+	echo "Preparing filesystem"
 	mkdir -p $ROOTFS/cross-tools/lib
 	mkdir -p $ROOTFS/tools
 	cd $ROOTFS/cross-tools
