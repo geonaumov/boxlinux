@@ -22,8 +22,13 @@ mkdir -pv $WORKING
 	echo "Kernel headers"
 	tar xf $SRC/linux-*
 	cd linux-*
+	if ARCH="aarch64"; then
+		OLDARCH=$ARCH
+		ARCH=arm
+	fi
 	make ARCH="$ARCH" INSTALL_HDR_PATH="$ROOTFS/cross-tools/$TARGET" headers_install &> $LOGDIR/kernel_headers.log
 	make clean &> $LOGDIR/kernel_headers.log
+	ARCH=$OLDARCH
 	cd $WORKING
 	rm -rf linux-*
 
