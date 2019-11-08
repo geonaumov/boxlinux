@@ -37,10 +37,6 @@ curl
 wifitools
 libbzip2
 links
-libevent
-libfts
-libasr
-opensmtpd
 expat
 libffi
 readline
@@ -55,5 +51,4 @@ cmake
 ruby
 nasm
 btx
-tor
 vim
