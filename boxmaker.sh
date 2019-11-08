@@ -5,7 +5,7 @@ set -e
 
 echo
 echo "BOXMAKER - THE BOXLINUX DEVELOPMENT SCRIPT"
-source config/boxmaker.config
+source ./boxmaker.conf
 
 deps_list="gcc
 cpp
@@ -15,10 +15,9 @@ flex
 bison
 bc
 xorriso
-grub2-mkrescue
 "
 
-init () {	
+setup_build () {
 	echo "Build system init"
 	mkdir -p $ROOTFS
 	mkdir -p $WORKING
@@ -27,36 +26,39 @@ init () {
 	mkdir -p $LOGS
 }
 
-root_check () {
+run_checks () {
 	if [[ $EUID -ne 0 ]]; then
 		echo
 		echo "This script must be run as root!"
 		help_me
 		exit 1
 	fi
-}
 
-file_check () {
-	FILENAME=$(realpath $1)
-	echo "Looking for $(basename $FILENAME)"
-	if [ ! -f $FILENAME ]; then
-		echo "File $FILENAME not found!"
-		exit
-	fi	
-}
-
-disk_check () {
 	FREEDISK=$(df ./ | grep dev | awk '{print $4}')
 	MINDISK=8000000
-	if [ $FREEDISK -lt $MINDISK ]; then
+	if [ ! $FREEDISK -lt $MINDISK ]; then
 		echo "Not enough disk space!"
 		exit
-	else
-		echo "Disk space available."
 	fi
-}
 
-deps_check () {
+if [ -f /usr/bin/grub-mkrescue ]; then 
+	echo "Found /usr/bin/grub-mkrescue"
+	GRUBCMD="/usr/bin/grub-mkrescue"
+fi
+
+if [ -f /usr/bin/grub2-mkrescue ]; then 
+	echo "Found /usr/bin/grub-mkrescue"
+	GRUBCMD="/usr/bin/grub2-mkrescue"
+fi 
+
+		if which $GRUBCMD &> /dev/null ; then
+			continue
+		else
+			echo "$GRUBCMD missing!"
+			exit
+		fi
+
+
 	echo "Checking dependencies"
 	for command in $deps_list
 	do
@@ -67,17 +69,25 @@ deps_check () {
 			exit
 		fi
 	done
+
+}
+
+file_check () {
+	FILENAME=$(realpath $1)
+	echo "Looking for $(basename $FILENAME)"
+	if [ ! -f $FILENAME ]; then
+		echo "File $FILENAME not found!"
+		exit
+	fi
 }
 
 unmount () {
-	echo "Unmounting virtual filesystems, if required"
 	set +e
 	umount $ROOTFS/proc &> /dev/null
 	umount $ROOTFS/sys &> /dev/null
 	umount $ROOTFS/dev &> /dev/null
 	umount $ROOTFS/tmp &> /dev/null
 	umount $ROOTFS/run &> /dev/null
-	echo "Unbinding directories, if required"
 	umount $ROOTFS/packages &> /dev/null
 	umount $ROOTFS/src &> /dev/null
 	umount $ROOTFS/logs &> /dev/null
@@ -86,9 +96,8 @@ unmount () {
 }
 
 clean_up () {
-	root_check
 	cd $DEFDIR
-	source config/boxmaker.config
+	source config/boxmaker.conf
 	unmount
 	rm -rf $ROOTFS
 	rm -rf $WORKING
@@ -96,29 +105,6 @@ clean_up () {
 	unlink /tools &> /dev/null
 	unlink /cross-tools &> /dev/null
 	set -e
-}
-
-download () {
-	echo "Sources directory is: $SRC"
-	cd $SRC
-	# Must add checksums here somehow
-	echo "Checking all sources"
-	for file in $(cat $DEFDIR/config/system.list | grep -v "_script"); do
-	if [ -f $DEFDIR/boxbuild/$file.boxbuild ]; then
-        	export $(sed -n 1p $DEFDIR/boxbuild/$file.boxbuild)
-        	export $(sed -n 4p $DEFDIR/boxbuild/$file.boxbuild)
-        	export $(sed -n 5p $DEFDIR/boxbuild/$file.boxbuild)
-	else 
-		echo "Boxbuild $file missing!"
-		exit
-	fi
-	if [ ! -f $SRC/${SOURCE} ]; then
-            	echo "File $SOURCE not found, downloading from $URL"
-            	wget -cq $URL/$SOURCE ;
-    	fi
-		
-	done ;	
-	cd ..
 }
 
 build_xtools () {
@@ -131,95 +117,15 @@ build_xtools () {
 	clean_up
 }
 
-build_tools () {
-	echo "Building tools-$ARCH-$BUILDID"
+build_rootfs () {
+	echo "Building rootfs-$ARCH-$BUILDID"
 	rm -rf $ROOTFS
 	mkdir -p $ROOTFS
 	cd $ROOTFS
+	echo Unpacking cross-tools
 	tar xf $FILENAME
-	source $DEFDIR/libexec/tools.sh
-	echo "Cleaning up tools"
-	cd $ROOTFS
-	rm -rf cross-tools
-	echo "Packing tools"
-	tar zcf $OUTPUT/tools-$ARCH-$BUILDID.tgz ./
+	source $DEFDIR/libexec/rootfs.sh
 	clean_up
-}
-
-build_system () {
-	set -e
-	echo "Creating directory tree"
-	mkdir -p $ROOTFS
-	mkdir -p $OUTPUT/packages
-	mkdir -p $ROOTFS/proc
-	mkdir -p $ROOTFS/sys
-	mkdir -p $ROOTFS/tmp
-	mkdir -p $ROOTFS/run 
-	mkdir -p $ROOTFS/dev 
-	mkdir -p $ROOTFS/etc
-	mkdir -p $ROOTFS/root
-	mkdir -p $ROOTFS/bin
-	mkdir -p $ROOTFS/sbin
-	mkdir -p $ROOTFS/home
-	mkdir -p $ROOTFS/root
-	mkdir -p $ROOTFS/mnt
-	mkdir -p $ROOTFS/lib
-	mkdir -p $ROOTFS/usr/bin
-	mkdir -p $ROOTFS/usr/sbin
-	mkdir -p $ROOTFS/var/log
-	cd $ROOTFS
-	echo "Mounting virtual filesystems"
-	mount -t proc proc $ROOTFS/proc
-	mount -t sysfs sysfs $ROOTFS/sys
-	mount -t tmpfs tmpfs $ROOTFS/run
-	mount -t tmpfs tmpfs $ROOTFS/tmp
-	mount --bind /dev $ROOTFS/dev
-	rm -rf ./dev/console
-	mknod -m 600 ./dev/console c 5 1
-	rm -rf ./dev/null
-	mknod -m 666 ./dev/null c 1 3
-	echo "Unpacking tools: $(basename $FILENAME)"
-	tar xf $FILENAME
-	echo "Setting up rootfs"
-	cp -rf $DEFDIR/config/$BASELIST.list $ROOTFS/current.list
-	cd bin
-	ln -s ../tools/bin/ash sh
-	ln -s ../tools/bin/ash ash
-	ln -s ../tools/bin/cat cat
-	ln -s ../tools/bin/echo echo
-	ln -s ../tools/bin/pwd pwd
-	ln -s ../tools/bin/stty stty
-	cd ../
-	cd lib
-	ln -s ../tools/lib/ld-2.26.so ld-linux-x86-64.so.2
-	ln -s ../tools/lib/libc.so.6 ./
-	ln -s ../tools/lib/libgcc_s.so.1 ./
-	ln -s ../tools/lib/libstdc++.so.6 ./
-	ln -s ../tools/lib/libmpc.so.3 ./
-	ln -s ../tools/lib/libmpfr.so.4 ./
-	ln -s ../tools/lib/libgmp.so.10 ./
-	ln -s ../tools/lib/libgmpxx.so.4 ./
-	ln -s ../tools/lib/libz.so.1 ./
-	sed -e 's/tools/usr/' ../tools/lib/libstdc++.la > ./libstdc++.la
-	cp -rf /etc/resolv.conf $ROOTFS/etc/
-	cp -rf $DEFDIR/config/busybox-*.config $ROOTFS/
-	cp -rf $DEFDIR/libexec/boxer.sh $ROOTFS/
-	chmod +x $ROOTFS/boxer.sh
-	mkdir -p $ROOTFS/tools/etc/
-	touch $ROOTFS/tools/etc/ld.so.conf
-	cp -rf $DEFDIR/sysconfig/* $ROOTFS/etc/
-	echo "Binding directories"
-	mkdir -p $ROOTFS/packages
-	mount --bind $OUTPUT/packages $ROOTFS/packages
-	mkdir -p $ROOTFS/src
-	mount --bind $SRC $ROOTFS/src
-	mkdir -p $ROOTFS/logs
-	mount --bind $LOGS $ROOTFS/logs
-	mkdir -p $ROOTFS/boxbuild
-	mount --bind $DEFDIR/boxbuild $ROOTFS/boxbuild
-	echo "Running boxer in chroot"
-	cd $DEFDIR
-	chroot $ROOTFS /tools/bin/ash boxer.sh
 }
 
 build_kernel () {
@@ -235,7 +141,7 @@ build_kernel () {
 	tar xf $SRC/linux-*
 	cd linux-*
 	make mrproper 
-	cp -rf $CONFIG/kernel.config .config
+	cp -rf $DEFDIR/kernel-$ARCH.conf .config
 	echo "Building"
 	make ARCH=$ARCH CROSS_COMPILE=$TARGET- 
 	echo "Done."
@@ -281,51 +187,34 @@ case "$1" in
 		download
 		;;
 	xtools)
-		root_check
-		deps_check
-		disk_check
+		run_checks
 		clean_up
-		init
-		download
+		setup_build
 		build_xtools
 		;;
-	tools)
-		root_check
+	rootfs)
+		run_checks
 		file_check $2
-		deps_check
-		disk_check
 		clean_up
-		init
-		download
-		build_tools $2
-		;;
-	system)
-		root_check
-		file_check $2
-		disk_check
-		clean_up
-		init
-		download
-		build_system $2
+		setup_build
+		build_rootfs $2
 		;;
 	kernel)
-		root_check
+		run_checks
 		file_check $2
-		deps_check
-		disk_check
 		clean_up
-		init
-		download
+		setup_build
 		build_kernel $2
 		;;
 	live)
-		root_check
+		run_checks
+		file_check $2
 		clean_up
-		init
-		download
+		setup_build
 		build_live $(realpath $2)
 		;;
 	clean)
+		run_checks
 		clean_up
 		;;
 	*)
