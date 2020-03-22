@@ -22,13 +22,24 @@ mkdir -pv $WORKING
 	echo "Kernel headers"
 	tar xf $SRC/linux-*
 	cd linux-*
-	if ARCH="aarch64"; then
-		OLDARCH=$ARCH
-		ARCH=arm
-	fi
+
+	# Work in progress. This section needs fixing
+	# aarch64 specific problem. There are many architectures but the family is the same
+	# ARCH and kernel ARCH are not the same
+	# Everything works fine as is but the final toolchain gets always named aarch64-.....
+	# Error in the if statement
+	echo "Current ARCH is: $ARCH"
+	# if ARCH="aarch64"; then
+	# 	OLDARCH=$ARCH
+	# 	ARCH=arm
+	# 	echo "ARCH chaged to $ARCH"
+	# 	echo " Old ARCH is: $OLDARCH"
+	# fi
 	make ARCH="$ARCH" INSTALL_HDR_PATH="$ROOTFS/cross-tools/$TARGET" headers_install &> $LOGDIR/kernel_headers.log
 	make clean &> $LOGDIR/kernel_headers.log
-	ARCH=$OLDARCH
+	# Same as above, to be fixed soon
+	# echo "Resetting ARCH to $OLDARCH"
+	# ARCH=$OLDARCH
 	cd $WORKING
 	rm -rf linux-*
 
