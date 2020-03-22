@@ -38,9 +38,6 @@ wifitools
 libbzip2
 links
 libevent
-libfts
-libasr
-opensmtpd
 expat
 libffi
 readline
