@@ -315,7 +315,18 @@ build_system () {
 	mknod zero c 1 5
 	
 	cd $ROOTFS
-	
+cat >  ./etc/inittab << "EOF"	
+# /etc/inittab
+# BoxLinux
+::sysinit:/etc/sysinit
+::restart:sv down /var/service/*
+::restart:/sbin/reboot
+::ctrlaltdel:/sbin/reboot
+::shutdown:sv down /var/service/*
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a
+EOF
+
 	cp -rf $DEFDIR/config/* $ROOTFS/etc/
 	chown -R root:root $ROOTFS/etc/
 	
@@ -342,10 +353,11 @@ build_system () {
 	make install &> $LOGDIR/busybox-install-$ARCH-$BUILDID.log
 	cp -rf _install/* $ROOTFS/
 	
-	echo "Creating UDHCPC script" 
+	# Creating UDHCPC script
 	mkdir -p $ROOTFS/usr/share/udhcpc
 	cp -rf examples/udhcp/simple.script $ROOTFS/usr/share/udhcpc/default.script
 	chmod +x $ROOTFS/usr/share/udhcpc/default.script
+	
 	cd $WORKING
 	rm -rf busybox-*
 	
@@ -499,15 +511,21 @@ build_system () {
 	
 	cd $ROOTFS
 	
-	msg "Stripping"
-	strip --strip-debug ./lib/*
-	strip --strip-debug ./usr/lib/*
-	strip --strip-debug ./lib64/*
-	strip --strip-debug ./usr/lib64/*
-	/usr/bin/strip --strip-unneeded ./bin/*
-	/usr/bin/strip --strip-unneeded ./sbin/*
-	/usr/bin/strip --strip-unneeded ./usr/bin/*
-	/usr/bin/strip --strip-unneeded ./usr/sbin/*
+	set +e
+strip_dir_list="./lib/*
+./usr/lib/*
+./lib64/*
+./usr/lib64/*
+./bin/*
+./usr/bin/*
+./usr/sbin/*
+"
+
+       for file in $strip_dir_list; do
+               strip --strip-debug $(realpath $file)
+               strip --strip-unneeded $(realpath $file)
+       done
+
 	
 	msg "Cleaning up documentation"
 	rm -rf ./share/{info,doc}
@@ -515,6 +533,7 @@ build_system () {
 		
 	msg "Removing unneeded files"
 	find ./{lib,libexec} -name \*.la -delete
+	set -e
 	
 	msg "Fixing links and permissions"
 	ln -s ./sbin/init ./
