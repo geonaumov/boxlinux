@@ -652,7 +652,7 @@ case "$1" in
 		file_check $2
 		clean_up
 		setup_build
-		build_iso $(realpath $2) $(realpath $3)
+		build_iso $2 $3
 		;;
 	clean)
 		run_checks
