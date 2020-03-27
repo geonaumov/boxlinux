@@ -536,11 +536,11 @@ build_kernel () {
 	echo "Unpacking and preparing source"
 	tar xf $SRC/linux-*
 	cd linux-*
-		if ARCH="aarch64"; then  
-			OLDARCH=$ARCH
-			echo "The correct architecture variable for aarch64 is arm64"
-			export ARCH="arm64"
-		fi
+		# if ARCH="aarch64"; then  
+		# 	OLDARCH=$ARCH
+		# 	echo "The correct architecture variable for aarch64 is arm64"
+		# 	export ARCH="arm64"
+		# fi
 		make mrproper
 		echo "Configuring kernel"
 		CROSS_COMPILE=$TARGET- make defconfig &> $DEFDIR/logs/kernel-config-$ARCH-$BUILDID.log
