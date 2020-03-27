@@ -553,6 +553,49 @@ build_kernel () {
 	rm -rf linux-*
 }
 
+build_iso () {
+cd $WORKING
+mkdir -p iso
+cd iso
+cp -rfv $2 ./ramfs.cpio.gz
+cp -rfv $1 ./kernel
+cd $WORKING
+
+echo "CD/ISO bootloader configuration"
+mkdir -pv iso/boot/grub
+cat >  iso/boot/grub/grub.cfg << "EOF"
+set timeout=5
+set default=0
+set menu_color_normal=yellow/black
+set menu_color_highlight=black/yellow
+menuentry "BoxLinux Live - Boot from CD" {
+      set root=(cd)
+      echo Loading kernel
+      linux /kernel root=/dev/ram0 quiet splash nomodeset
+      echo Loading ramfs
+      initrd /ramfs.cpio.gz
+      boot
+}
+EOF
+
+echo "Creating ISO image"
+
+if [ -f /usr/bin/grub-mkrescue ]; then 
+	echo "Found /usr/bin/grub-mkrescue"
+	GRUBCMD="/usr/bin/grub-mkrescue"
+else 
+	echo "Assuming you have grub2-mkrescue"
+	GRUBCMD="/usr/bin/grub2-mkrescue"
+fi
+	
+$GRUBCMD -V BOXLINUX -o $OUTPUT/boxlinux-$ARCH-$BUILDID.iso iso
+
+echo 
+echo "Done. Output file is: $OUTPUT/boxlinux-$ARCH-$BUILDID.iso"
+echo
+
+}
+
 help_me () {
 	echo 
 	echo "Usage: "
@@ -566,7 +609,9 @@ help_me () {
 	echo "   xtools                               - build xtools"
 	echo "   kernel   /path/to/xtools-ID.tar.gz   - build kernel with XTOOLS"
 	echo "   system   /path/to/tools-ID.tar.gz    - build binary packages with TOOLS"
-	echo "   live     /path/to/bzImage-ID.tar.gz  - build live iso with KERNEL"
+	echo
+	echo "Build ISO with KERNEL and RAMFS as options (experimental, requires grub2"
+	echo "   iso     /path/to/bzImage-ID.tar.gz /path/to/ramfs-ID.tar.gz"
 	echo
 }
 
@@ -601,6 +646,13 @@ case "$1" in
 		clean_up
 		setup_build
 		build_live $(realpath $2)
+		;;
+	iso)
+		run_checks
+		file_check $2
+		clean_up
+		setup_build
+		build_iso $(realpath $2) $(realpath $3)
 		;;
 	clean)
 		run_checks
