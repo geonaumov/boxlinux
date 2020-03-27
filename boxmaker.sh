@@ -413,88 +413,88 @@ build_system () {
 	cd $WORKING
 	rm -rf links-*
 	
-	msg "Make"
-	tar xf $SRC/make-*
-	cd make-*
-	./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET"  &> $LOGDIR/make-conf-$ARCH-$BUILDID.log
-	make &> $LOGDIR/make-build-$ARCH-$BUILDID.log
-	make install  DESTDIR=$ROOTFS &> $LOGDIR/make-install-$ARCH-$BUILDID.log
-	cd $WORKING
-	rm -rf make-*
+	# msg "Make"
+	# tar xf $SRC/make-*
+	# cd make-*
+	# ./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET"  &> $LOGDIR/make-conf-$ARCH-$BUILDID.log
+	# make &> $LOGDIR/make-build-$ARCH-$BUILDID.log
+	# make install  DESTDIR=$ROOTFS &> $LOGDIR/make-install-$ARCH-$BUILDID.log
+	# cd $WORKING
+	# rm -rf make-*
 	
-	msg "M4"
-	tar xf $SRC/m4-*
-	cd m4-*
-	./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET"  &> $LOGDIR/m4-conf-$ARCH-$BUILDID.log 
-	make &> $LOGDIR/m4-build-$ARCH-$BUILDID.log
-	make install  DESTDIR=$ROOTFS &> $LOGDIR/m4-install-$ARCH-$BUILDID.log
-	cd $WORKING
-	rm -rf m4-*
+	# msg "M4"
+	# tar xf $SRC/m4-*
+	# cd m4-*
+	# ./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET"  &> $LOGDIR/m4-conf-$ARCH-$BUILDID.log 
+	# make &> $LOGDIR/m4-build-$ARCH-$BUILDID.log
+	# make install  DESTDIR=$ROOTFS &> $LOGDIR/m4-install-$ARCH-$BUILDID.log
+	# cd $WORKING
+	# rm -rf m4-*
 	
-	msg "Patch"
-	tar xf $SRC/patch-*
-	cd patch-*
-	./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET" &> $LOGDIR/patch-conf-$ARCH-$BUILDID.log
-	make  &> $LOGDIR/patch-build-$ARCH-$BUILDID.log
-	make install  DESTDIR=$ROOTFS &> $LOGDIR/patch-install-$ARCH-$BUILDID.log
-	cd $WORKING
-	rm -rf patch-*
+	# msg "Patch"
+	# tar xf $SRC/patch-*
+	# cd patch-*
+	# ./configure  --prefix="/usr" --build=$(uname -m)-linux-gnu --host="$TARGET" &> $LOGDIR/patch-conf-$ARCH-$BUILDID.log
+	# make  &> $LOGDIR/patch-build-$ARCH-$BUILDID.log
+	# make install  DESTDIR=$ROOTFS &> $LOGDIR/patch-install-$ARCH-$BUILDID.log
+	# cd $WORKING
+	# rm -rf patch-*
 	
-	msg "Binutils"
-	tar xf $SRC/binutils-*
-	cd binutils-*
-	mkdir -p binutils-build
-	cd binutils-build
-	../configure --prefix=/usr --build=$(uname -m)-linux-gnu --host=$TARGET  --target=$TARGET    \
-		--with-lib-path=/usr/lib  --disable-nls      \
-		--enable-shared --enable-64-bit-bfd    \
-		--disable-multilib --disable-gold --enable-plugins    \
-		--with-system-zlib --enable-threads  >> $LOGS/binutils-conf-$ARCH-$BUILDID.log
-	make  &> $LOGDIR/binutils-build-$ARCH-$BUILDID.log
-	make install DESTDIR=$ROOTFS &> $LOGDIR/binutils-install-$ARCH-$BUILDID.log
-	cd $WORKING
-	rm -rf binutils-*
+	# msg "Binutils"
+	# tar xf $SRC/binutils-*
+	# cd binutils-*
+	# mkdir -p binutils-build
+	# cd binutils-build
+	# ../configure --prefix=/usr --build=$(uname -m)-linux-gnu --host=$TARGET  --target=$TARGET    \
+	# 	--with-lib-path=/usr/lib  --disable-nls      \
+	# 	--enable-shared --enable-64-bit-bfd    \
+	# 	--disable-multilib --disable-gold --enable-plugins    \
+	# 	--with-system-zlib --enable-threads  >> $LOGS/binutils-conf-$ARCH-$BUILDID.log
+	# make  &> $LOGDIR/binutils-build-$ARCH-$BUILDID.log
+	# make install DESTDIR=$ROOTFS &> $LOGDIR/binutils-install-$ARCH-$BUILDID.log
+	# cd $WORKING
+	# rm -rf binutils-*
 	
-	msg "GCC"
-	tar xf $SRC/gcc-*
-	cd gcc-*
+	# msg "GCC"
+	# tar xf $SRC/gcc-*
+	# cd gcc-*
 	
-	tar xf $SRC/gmp-*
-	tar xf $SRC/mpc-*
-	tar xf $SRC/mpfr-*
-	mv ./gmp-* ./gmp
-	mv ./mpc-* ./mpc
-	mv ./mpfr-* ./mpfr
+	# tar xf $SRC/gmp-*
+	# tar xf $SRC/mpc-*
+	# tar xf $SRC/mpfr-*
+	# mv ./gmp-* ./gmp
+	# mv ./mpc-* ./mpc
+	# mv ./mpfr-* ./mpfr
 	
-	echo "StartFile Spec"
-	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/usr/lib/"\n' >> gcc/config/linux.h
-	echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
-	echo "Disabling fixinclude tests"
-	cp -v gcc/Makefile.in gcc/Makefile.in.orig
-	sed 's@\./fixinc\.sh@-c true@' gcc/Makefile.in.orig > gcc/Makefile.in
-	mkdir -p gcc-build
-	cd gcc-build
-	../configure --prefix=/usr 	\
-		--build=$(uname -m)-linux-gnu --host=$TARGET --target=$TARGET		\
-		--with-local-prefix=/usr		\
-		--disable-multilib			\
-		--enable-languages=c,c++   \
-		--with-system-zlib 	\
-		--with-native-system-header-dir=/usr/include 	\
-		--enable-c99  \
-	       	--enable-long-long  \
-		--enable-install-libiberty  \
-	 	--disable-libgomp --disable-libsanitizer       \
-	 	--disable-nls --disable-libmudflap             \
-		--disable-libssp --disable-libquadmath          \
-		--disable-libatomic --disable-libmpx            \
-		--disable-libitm --disable-libvtv               \
-		--disable-libcilkrts   &> $LOGDIR/gcc-conf-$ARCH-$BUILDID.log
+	# echo "StartFile Spec"
+	# echo -en '\n#undef STANDARD_STARTFILE_PREFIX_1\n#define STANDARD_STARTFILE_PREFIX_1 "/usr/lib/"\n' >> gcc/config/linux.h
+	# echo -en '\n#undef STANDARD_STARTFILE_PREFIX_2\n#define STANDARD_STARTFILE_PREFIX_2 ""\n' >> gcc/config/linux.h
+	# echo "Disabling fixinclude tests"
+	# cp -v gcc/Makefile.in gcc/Makefile.in.orig
+	# sed 's@\./fixinc\.sh@-c true@' gcc/Makefile.in.orig > gcc/Makefile.in
+	# mkdir -p gcc-build
+	# cd gcc-build
+	# ../configure --prefix=/usr 	\
+	# 	--build=$(uname -m)-linux-gnu --host=$TARGET --target=$TARGET		\
+	# 	--with-local-prefix=/usr		\
+	# 	--disable-multilib			\
+	# 	--enable-languages=c,c++   \
+	# 	--with-system-zlib 	\
+	# 	--with-native-system-header-dir=/usr/include 	\
+	# 	--enable-c99  \
+	#        	--enable-long-long  \
+	# 	--enable-install-libiberty  \
+	#  	--disable-libgomp --disable-libsanitizer       \
+	#  	--disable-nls --disable-libmudflap             \
+	# 	--disable-libssp --disable-libquadmath          \
+	# 	--disable-libatomic --disable-libmpx            \
+	# 	--disable-libitm --disable-libvtv               \
+	# 	--disable-libcilkrts   &> $LOGDIR/gcc-conf-$ARCH-$BUILDID.log
 	
-	make AS_FOR_TARGET=$TARGET-as LD_FOR_TARGET=$TARGET-ld   &> $LOGDIR/gcc-build-$ARCH-$BUILDID.log
-	make install DESTDIR=$ROOTFS &> $LOGDIR/gcc-install-$ARCH-$BUILDID.log
-	cd $WORKING
-	rm -rf gcc-*
+	# make AS_FOR_TARGET=$TARGET-as LD_FOR_TARGET=$TARGET-ld   &> $LOGDIR/gcc-build-$ARCH-$BUILDID.log
+	# make install DESTDIR=$ROOTFS &> $LOGDIR/gcc-install-$ARCH-$BUILDID.log
+	# cd $WORKING
+	# rm -rf gcc-*
 	
 	msg "Done building"
 	
