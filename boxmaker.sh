@@ -1,5 +1,5 @@
-#! /bin/bash
-# gnaumov@premiumworx.net
+#! /bin/sh
+# george.naumov@outlook.com
 
 msg () {
 	echo -e "[\e[33m $( date +%H:%M:%S)\e[39m ] $1"
@@ -238,12 +238,11 @@ build_system () {
 	LOGDIR="$DEFDIR/logs"
 	cd $ROOTFS
 	
+	msg "Preparing filesystem"
 	set -e
 	echo -ne '#(1%)\r'
 	cd $ROOTFS
 	ln -sfn $ROOTFS/cross-tools /
-	
-	msg "Preparing filesystem"
 	export AS_FOR_TARGET=""
 	export CC="$TARGET-gcc"
 	export CXX="$TARGET-g++"
@@ -343,7 +342,7 @@ build_system () {
 	make install &> $LOGDIR/busybox-install-$ARCH-$BUILDID.log
 	cp -rf _install/* $ROOTFS/
 	
-	## UDHCPC SCRIPT
+	echo "Creating UDHCPC script" 
 	mkdir -p $ROOTFS/usr/share/udhcpc
 	cp -rf examples/udhcp/simple.script $ROOTFS/usr/share/udhcpc/default.script
 	chmod +x $ROOTFS/usr/share/udhcpc/default.script
@@ -404,7 +403,7 @@ build_system () {
 	cd $WORKING
 	rm -rf rsync-*
 	
-	msg "Links"
+	msg "Links browser"
 	tar xf $SRC/links-*
 	cd links-*
 	./configure --prefix=/usr --build=$(uname -m)-linux-gnu --host=$ARCH-box-linux-musl &> $LOGDIR/links-conf-$ARCH-$BUILDID.log
@@ -500,7 +499,24 @@ build_system () {
 	
 	cd $ROOTFS
 	
-	msg "Final adjustments"
+	msg "Stripping"
+	strip --strip-debug ./lib/*
+	strip --strip-debug ./usr/lib/*
+	strip --strip-debug ./lib64/*
+	strip --strip-debug ./usr/lib64/*
+	/usr/bin/strip --strip-unneeded ./bin/*
+	/usr/bin/strip --strip-unneeded ./sbin/*
+	/usr/bin/strip --strip-unneeded ./usr/bin/*
+	/usr/bin/strip --strip-unneeded ./usr/sbin/*
+	
+	msg "Cleaning up documentation"
+	rm -rf ./share/{info,doc}
+	rm -rf ./usr/share/{info,doc
+		
+	msg "Removing unneeded files"
+	find ./{lib,libexec} -name \*.la -delete
+	
+	msg "Fixing links and permissions"
 	ln -s ./sbin/init ./
 	chmod +x ./init
 	chmod +x ./etc/sysinit
@@ -547,7 +563,7 @@ build_kernel () {
 		echo "Building kernel"
 		CROSS_COMPILE=$TARGET- make &> $DEFDIR/logs/kernel-build-$ARCH-$BUILDID.log
 		echo "Done."
-		cp -rf arch/$ARCH/boot/bzImage $OUTPUT/kernel-$ARCH-$BUILDID
+		cp -v $(realpath arch/$ARCH/boot/bzImage) $OUTPUT/kernel-$ARCH-$BUILDID
 		export ARCH=$OLDARCH
 	cd $WORKING
 	rm -rf linux-*
@@ -555,13 +571,14 @@ build_kernel () {
 
 build_iso () {
 
-mkdir -p $WORKING/iso
-cp -rfv $2 $WORKING/iso/ramfs.cpio.gz
-cp -rfv $1 $WORKING/iso/kernel
-cd $WORKING
+	mkdir -p $WORKING/iso
+	cp -rfv $2 $WORKING/iso/ramfs.cpio.gz
+	cp -rfv $1 $WORKING/iso/kernel
+	cd $WORKING
 
-echo "CD/ISO bootloader configuration"
-mkdir -pv iso/boot/grub
+	echo "CD/ISO bootloader configuration"
+	mkdir -pv iso/boot/grub
+	
 cat >  iso/boot/grub/grub.cfg << "EOF"
 set timeout=5
 set default=0
@@ -577,21 +594,21 @@ menuentry "BoxLinux Live - Boot from CD" {
 }
 EOF
 
-echo "Creating ISO image"
+	echo "Creating ISO image"
 
-if [ -f /usr/bin/grub-mkrescue ]; then 
-	echo "Found /usr/bin/grub-mkrescue"
-	GRUBCMD="/usr/bin/grub-mkrescue"
-else 
-	echo "Assuming you have grub2-mkrescue"
-	GRUBCMD="/usr/bin/grub2-mkrescue"
-fi
-	
-$GRUBCMD -V BOXLINUX -o $OUTPUT/boxlinux-$ARCH-$BUILDID.iso iso
+	if [ -f /usr/bin/grub-mkrescue ]; then 
+		echo "Found /usr/bin/grub-mkrescue"
+		GRUBCMD="/usr/bin/grub-mkrescue"
+	else 
+		echo "Assuming you have grub2-mkrescue"
+		GRUBCMD="/usr/bin/grub2-mkrescue"
+	fi
+		
+	$GRUBCMD -V BOXLINUX -o $OUTPUT/boxlinux-$ARCH-$BUILDID.iso iso
 
-echo 
-echo "Done. Output file is: $OUTPUT/boxlinux-$ARCH-$BUILDID.iso"
-echo
+	echo 
+	echo "Done. Output file is: $OUTPUT/boxlinux-$ARCH-$BUILDID.iso"
+	echo
 
 }
 
@@ -638,13 +655,6 @@ case "$1" in
 		clean_up
 		setup_build
 		build_kernel $2
-		;;
-	live)
-		run_checks
-		file_check $2
-		clean_up
-		setup_build
-		build_live $(realpath $2)
 		;;
 	iso)
 		run_checks
