@@ -554,11 +554,10 @@ build_kernel () {
 }
 
 build_iso () {
-cd $WORKING
-mkdir -p iso
-cd iso
-cp -rfv $2 ./ramfs.cpio.gz
-cp -rfv $1 ./kernel
+
+mkdir -p $WORKING/iso
+cp -rfv $2 $WORKING/iso/ramfs.cpio.gz
+cp -rfv $1 $WORKING/iso/kernel
 cd $WORKING
 
 echo "CD/ISO bootloader configuration"
