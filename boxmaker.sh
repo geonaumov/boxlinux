@@ -648,7 +648,6 @@ case "$1" in
 		;;
 	iso)
 		run_checks
-		file_check $2
 		clean_up
 		setup_build
 		build_iso $2 $3
