@@ -1,0 +1,4 @@
+#!/bin/ash
+# BoxLinux tor anonymity service
+echo "Starting tor networking"
+exec tor -f /etc/torrc 2>&1
