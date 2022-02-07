@@ -15,7 +15,7 @@ flex
 bison
 bc
 xorriso
-grub2-mkrescue
+grub-mkrescue
 "
 
 init () {	

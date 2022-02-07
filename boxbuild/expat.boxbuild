@@ -1,8 +1,8 @@
 PKGNAME=expat
-VERSION=2.2.5
+VERSION=2.4.1
 TAG=system
-SOURCE=expat-2.2.5.tar.bz2
-URL=http://prdownloads.sourceforge.net/expat/
+SOURCE=expat-2.4.1.tar.bz2
+URL=http://sourceforge.net/projects/expat/files/expat/2.4.1/
 DEPS="musl (>= 1.1.18)"
 CONFLICTS=none
 

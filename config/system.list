@@ -51,6 +51,4 @@ libuv
 cmake
 ruby
 nasm
-btx
-tor
 vim
